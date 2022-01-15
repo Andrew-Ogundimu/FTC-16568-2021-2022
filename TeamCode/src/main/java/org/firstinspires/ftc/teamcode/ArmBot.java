@@ -53,10 +53,10 @@ public class ArmBot extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor joe = null;
-    private DcMotor seinfeld = null;
-    private DcMotor kramer = null;
-    private DcMotor george = null;
+    private DcMotor fl = null;
+    private DcMotor fr = null;
+    private DcMotor bl = null;
+    private DcMotor br = null;
     private Servo arm1 = null;
     private Servo arm2 = null;
     private double hFOV = 60; //Horizontal FOV in degrees
@@ -93,20 +93,20 @@ public class ArmBot extends OpMode
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        joe = hardwareMap.get(DcMotor.class, "front_left");
-        seinfeld = hardwareMap.get(DcMotor.class, "front_right");
-        kramer = hardwareMap.get(DcMotor.class, "back_left");
-        george = hardwareMap.get(DcMotor.class, "back_right");
+        fl = hardwareMap.get(DcMotor.class, "front_left");
+        fr = hardwareMap.get(DcMotor.class, "front_right");
+        bl = hardwareMap.get(DcMotor.class, "back_left");
+        br = hardwareMap.get(DcMotor.class, "back_right");
         arm1 = hardwareMap.get(Servo.class,"arm1");
         arm2 = hardwareMap.get(Servo.class,"arm2");
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
-        joe.setDirection(DcMotor.Direction.FORWARD);
-        george.setDirection(DcMotor.Direction.REVERSE);
+        fl.setDirection(DcMotor.Direction.FORWARD);
+        br.setDirection(DcMotor.Direction.REVERSE);
 
-        seinfeld.setDirection(DcMotor.Direction.FORWARD);
-        kramer.setDirection(DcMotor.Direction.REVERSE);
+        fr.setDirection(DcMotor.Direction.FORWARD);
+        bl.setDirection(DcMotor.Direction.REVERSE);
 
         int image_width = 1280;
         int image_height = 720;
@@ -179,15 +179,15 @@ public class ArmBot extends OpMode
         double power3 = -gamepad1.left_stick_x;
         double power4 = -gamepad1.left_stick_y;
 
-        joe.setPower(power1);
-        george.setPower(power2);
-        kramer.setPower(power3);
-        seinfeld.setPower(power4);
+        fl.setPower(power1);
+        br.setPower(power2);
+        bl.setPower(power3);
+        fr.setPower(power4);
 
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Gamepad", Float.toString(gamepad1.left_stick_x)+" "+Float.toString(gamepad1.left_stick_y));
-        telemetry.addData("Motors", "left (%.2f), right (%.2f)", horizWheel,vertWheel);
+        // telemetry.addData("Motors", "left (%.2f), right (%.2f)", horizWheel,vertWheel);
     }
 
     /*
