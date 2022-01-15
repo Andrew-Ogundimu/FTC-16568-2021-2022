@@ -82,6 +82,9 @@ public class ArmBot extends OpMode
      */
     @Override
     public void init() {
+        initVuforia();
+        initTfod();
+
         object_sizes.put("Ball",69.9);
         object_sizes.put("Cube",50.8);
         object_sizes.put("Duck",51.86); //average of the width,length, and height
@@ -140,16 +143,19 @@ public class ArmBot extends OpMode
         runtime.reset();
     }
 
+
+    public int positive (double turn) {
+        if (turn!=0) {
+            return (int)(turn/Math.abs(turn));
+        } else {
+            return 1;
+        }
+    }
     /*
      * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
      */
     @Override
     public void loop() {
-        // - Use one joystick to control all directions of motion for the robot.
-        double joy_x = gamepad1.left_stick_x;
-        double joy_y = gamepad1.left_stick_y;
-        double horizWheel = joy_x+joy_y;
-        double vertWheel = joy_x+joy_y;
         List<Recognition> objects = tfod.getUpdatedRecognitions();
 
         // Tank Mode uses one stick to control each wheel.
@@ -159,21 +165,28 @@ public class ArmBot extends OpMode
 
         // Send calculated power to wheels
         int num = 0;
-        for (Recognition rec: objects) {
-            num++;
-            if (rec.getLabel()!="Marker") {
-                double distance = focal_mm*object_sizes.get(rec.getLabel())/rec.getWidth();
-                telemetry.addData("Object "+String.valueOf(num)+" - ("+rec.getLabel()+")", "Distance: " + String.valueOf(distance));
+        if (objects != null) {
+            for (Recognition rec : objects) {
+                num++;
+                if (rec.getLabel() != "Marker") {
+                    double distance = focal_mm * object_sizes.get(rec.getLabel()) / rec.getWidth();
+                    telemetry.addData("Object " + String.valueOf(num) + " - (" + rec.getLabel() + ")", "Distance: " + String.valueOf(distance));
+                }
             }
         }
+        double power1 = gamepad1.left_stick_x;
+        double power2 = gamepad1.left_stick_y;
+        double power3 = -gamepad1.left_stick_x;
+        double power4 = -gamepad1.left_stick_y;
 
-        joe.setPower(horizWheel);
-        george.setPower(vertWheel);
-        kramer.setPower(horizWheel);
-        seinfeld.setPower(vertWheel);
+        joe.setPower(power1);
+        george.setPower(power2);
+        kramer.setPower(power3);
+        seinfeld.setPower(power4);
 
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
+        telemetry.addData("Gamepad", Float.toString(gamepad1.left_stick_x)+" "+Float.toString(gamepad1.left_stick_y));
         telemetry.addData("Motors", "left (%.2f), right (%.2f)", horizWheel,vertWheel);
     }
 
