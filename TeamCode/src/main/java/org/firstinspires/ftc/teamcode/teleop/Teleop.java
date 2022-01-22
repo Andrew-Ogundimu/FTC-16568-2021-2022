@@ -27,10 +27,10 @@ public class Teleop extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor fl = null;
-    private DcMotor fr = null;
-    private DcMotor bl = null;
-    private DcMotor br = null;
+    private DcMotor m0 = null;
+    private DcMotor m1 = null;
+    private DcMotor m2 = null;
+    private DcMotor m3 = null;
     private Servo arm1 = null;
     private Servo arm2 = null;
     private double hFOV = 60; //Horizontal FOV in degrees
@@ -67,18 +67,18 @@ public class Teleop extends OpMode
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        fl = hardwareMap.get(DcMotor.class, "front_left");
-        fr = hardwareMap.get(DcMotor.class, "front_right");
-        bl = hardwareMap.get(DcMotor.class, "back_left");
-        br = hardwareMap.get(DcMotor.class, "back_right");
+        m0 = hardwareMap.get(DcMotor.class, "m0"); // fl
+        m1 = hardwareMap.get(DcMotor.class, "m1"); // fr
+        m2 = hardwareMap.get(DcMotor.class, "m2"); // bl
+        m3 = hardwareMap.get(DcMotor.class, "m3"); // br
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
-        fl.setDirection(DcMotor.Direction.FORWARD);
-        br.setDirection(DcMotor.Direction.REVERSE);
+        m0.setDirection(DcMotor.Direction.FORWARD);
+        m3.setDirection(DcMotor.Direction.REVERSE);
 
-        fr.setDirection(DcMotor.Direction.FORWARD);
-        bl.setDirection(DcMotor.Direction.REVERSE);
+        m1.setDirection(DcMotor.Direction.FORWARD);
+        m2.setDirection(DcMotor.Direction.REVERSE);
 
         int image_width = 1280;
         int image_height = 720;
@@ -127,33 +127,17 @@ public class Teleop extends OpMode
      */
     @Override
     public void loop() {
-        List<Recognition> objects = tfod.getUpdatedRecognitions();
+        double m0_power = gamepad1.left_stick_x; // left or right
+        double m2_power = -gamepad1.left_stick_x; // left or right
 
-        // Tank Mode uses one stick to control each wheel.
-        // - This requires no math, but it is hard to drive forward slowly and keep straight.
-        // leftPower  = -gamepad1.left_stick_y ;
-        // rightPower = -gamepad1.right_stick_y ;
+        double m3_power = gamepad1.left_stick_y; // up or down
+        double m1_power = -gamepad1.left_stick_y; // up or down
 
-        // Send calculated power to wheels
-        int num = 0;
-        if (objects != null) {
-            for (Recognition rec : objects) {
-                num++;
-                if (rec.getLabel() != "Marker") {
-                    double distance = focal_mm * object_sizes.get(rec.getLabel()) / rec.getWidth();
-                    telemetry.addData("Object " + String.valueOf(num) + " - (" + rec.getLabel() + ")", "Distance: " + String.valueOf(distance));
-                }
-            }
-        }
-        double power1 = gamepad1.left_stick_x;
-        double power2 = gamepad1.left_stick_y;
-        double power3 = -gamepad1.left_stick_x;
-        double power4 = -gamepad1.left_stick_y;
+        m0.setPower(m0_power);
+        m2.setPower(m2_power);
 
-        fl.setPower(power1);
-        br.setPower(power2);
-        bl.setPower(power3);
-        fr.setPower(power4);
+        m3.setPower(m3_power);
+        m1.setPower(m1_power);
 
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
