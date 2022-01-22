@@ -133,6 +133,13 @@ public class Teleop extends OpMode
         double m3_power = gamepad1.left_stick_y; // up or down
         double m1_power = gamepad1.left_stick_y; // up or down
 
+        if (gamepad1.right_stick_x!=0) {
+            m0_power = gamepad1.right_stick_x;
+            m1_power = gamepad1.right_stick_x;
+            m2_power = -gamepad1.right_stick_x;
+            m3_power = -gamepad1.right_stick_x;
+        }
+
         m0.setPower(m0_power);
         m2.setPower(m2_power);
 
