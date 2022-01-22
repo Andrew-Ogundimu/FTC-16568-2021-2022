@@ -93,20 +93,35 @@ public class ArmBot extends OpMode
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
+<<<<<<< Updated upstream
         fl = hardwareMap.get(DcMotor.class, "front_left");
         fr = hardwareMap.get(DcMotor.class, "front_right");
         bl = hardwareMap.get(DcMotor.class, "back_left");
         br = hardwareMap.get(DcMotor.class, "back_right");
+=======
+        br = hardwareMap.get(DcMotor.class, "1"); //back right
+        bl = hardwareMap.get(DcMotor.class, "2"); //back left
+        fl = hardwareMap.get(DcMotor.class, "3"); //front left
+        fr = hardwareMap.get(DcMotor.class, "4"); //front right
+>>>>>>> Stashed changes
         arm1 = hardwareMap.get(Servo.class,"arm1");
         arm2 = hardwareMap.get(Servo.class,"arm2");
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
+<<<<<<< Updated upstream
         fl.setDirection(DcMotor.Direction.FORWARD);
         br.setDirection(DcMotor.Direction.REVERSE);
 
         fr.setDirection(DcMotor.Direction.FORWARD);
         bl.setDirection(DcMotor.Direction.REVERSE);
+=======
+        br.setDirection(DcMotor.Direction.FORWARD);
+        fl.setDirection(DcMotor.Direction.REVERSE);
+
+        bl.setDirection(DcMotor.Direction.FORWARD);
+        fr.setDirection(DcMotor.Direction.REVERSE);
+>>>>>>> Stashed changes
 
         int image_width = 1280;
         int image_height = 720;
@@ -121,7 +136,7 @@ public class ArmBot extends OpMode
             // to artificially zoom in to the center of image.  For best results, the "aspectRatio" argument
             // should be set to the value of the images used to create the TensorFlow Object Detection model
             // (typically 16/9).
-            //tfod.setZoom(2.5, 16.0/9.0);
+            tfod.setZoom(2.5, 16.0/9.0);
         }
 
         // Tell the driver that initialization is complete.
@@ -176,12 +191,27 @@ public class ArmBot extends OpMode
         }
         double power1 = gamepad1.left_stick_x;
         double power2 = gamepad1.left_stick_y;
+<<<<<<< Updated upstream
         double power3 = -gamepad1.left_stick_x;
         double power4 = -gamepad1.left_stick_y;
 
         fl.setPower(power1);
         br.setPower(power2);
         bl.setPower(power3);
+=======
+        double power3 = gamepad1.left_stick_x;
+        double power4 = gamepad1.left_stick_y;
+        if (gamepad1.right_stick_x!=0) {
+            power1 = gamepad1.right_stick_x;
+            power2 = gamepad1.right_stick_x;
+            power3 = -gamepad1.right_stick_x;
+            power4 = -gamepad1.right_stick_x;
+        }
+
+        br.setPower(power1);
+        bl.setPower(power2);
+        fl.setPower(power3);
+>>>>>>> Stashed changes
         fr.setPower(power4);
 
         // Show the elapsed game time and wheel power.
