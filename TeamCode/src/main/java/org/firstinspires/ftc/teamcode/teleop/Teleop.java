@@ -128,10 +128,10 @@ public class Teleop extends OpMode
     @Override
     public void loop() {
         double m0_power = gamepad1.left_stick_x; // left or right
-        double m2_power = -gamepad1.left_stick_x; // left or right
+        double m2_power = gamepad1.left_stick_x; // left or right
 
         double m3_power = gamepad1.left_stick_y; // up or down
-        double m1_power = -gamepad1.left_stick_y; // up or down
+        double m1_power = gamepad1.left_stick_y; // up or down
 
         m0.setPower(m0_power);
         m2.setPower(m2_power);
