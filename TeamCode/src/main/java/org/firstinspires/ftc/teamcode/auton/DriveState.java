@@ -7,76 +7,83 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Settings;
+import java.lang.Math;
+
+/**
+ * This is the drive state for a holonomic drive train.
+ */
 
 public class DriveState extends State {
 
-    private double driveSpeed;
+    private double driveSpeed_x;
+    private double driveSpeed_y;
     private double maxSpeed;
     private double distance;
     private int position;
+    private int position_x;
+    private int position_y;
     private int flTargetPosition;
     private int frTargetPosition;
     private int blTargetPosition;
     private int brTargetPosition;
-    private DcMotor fl;
-    private DcMotor fr;
-    private DcMotor bl;
-    private DcMotor br;
+    private DcMotor m0;
+    private DcMotor m1;
+    private DcMotor m2;
+    private DcMotor m3;
     private final double wheelCircumference = (1.97 * 2) * Math.PI;
     private int ticksPerTurn = 1120;
-    private boolean flReached = false;
-    private boolean frReached = false;
-    private boolean blReached = false;
-    private boolean brReached = false;
+    private boolean m0Reached = false;
+    private boolean m1Reached = false;
+    private boolean m2Reached = false;
+    private boolean m3Reached = false;
     private int threshold = 75;
-    private PIDController pidDrive;
-    private String direction;
+    private PIDController pidDrive_x;
+    private PIDController pidDrive_y;
+    private int direction;
     private Telemetry telemetry;
     private double realSpeed;
 
-    public DriveState(double target, double speed, HardwareMap hardwareMap, Telemetry telemetry) {
-        super(hardwareMap);
-        this.telemetry = telemetry;
-        distance = target;
-        driveSpeed = speed;
-    }
+    /**
+     public DriveState(double target, double speed, HardwareMap hardwareMap, Telemetry telemetry) {
+     super(hardwareMap);
+     this.telemetry = telemetry;
+     distance = target;
+     driveSpeed = speed;
+     }
+     */
 
     //new method for beta PID-drive
-    public DriveState(double distance, double maxSpeed, String direction, HardwareMap hardwareMap, Telemetry telemetry) {
+    public DriveState(double distance, double maxSpeed, int direction, HardwareMap hardwareMap, Telemetry telemetry) {
         super(hardwareMap);
         this.distance = distance;
         this.maxSpeed = maxSpeed;
-        this.direction = direction;
+        this.direction = direction;  // angle
         this.telemetry = telemetry;
 
-        fl = hardwareMap.dcMotor.get(Settings.FRONT_LEFT);
-        fr = hardwareMap.dcMotor.get(Settings.FRONT_RIGHT);
-        bl = hardwareMap.dcMotor.get(Settings.BACK_LEFT);
-        br = hardwareMap.dcMotor.get(Settings.BACK_RIGHT);
+        // initialize the motors with the hardware map
 
-        //reverse directions for tile-runner
+        m0 = hardwareMap.get(DcMotor.class, "m0");
+        m1 = hardwareMap.get(DcMotor.class, "m1");
+        m2 = hardwareMap.get(DcMotor.class, "m2");
+        m3 = hardwareMap.get(DcMotor.class, "m3");
 
-        fl.setDirection(DcMotor.Direction.FORWARD);
-        fr.setDirection(DcMotor.Direction.REVERSE);
-        bl.setDirection(DcMotor.Direction.FORWARD);
-        br.setDirection(DcMotor.Direction.REVERSE);
+        // Most robots need the motor on one side to be reversed to drive forward
+        // Reverse the motor that runs backwards when connected directly to the battery
+        m0.setDirection(DcMotor.Direction.FORWARD);
+        m3.setDirection(DcMotor.Direction.REVERSE);
 
-        /**
-         fl.setDirection(DcMotor.Direction.REVERSE);
-         fr.setDirection(DcMotor.Direction.FORWARD);
-         bl.setDirection(DcMotor.Direction.REVERSE);
-         br.setDirection(DcMotor.Direction.FORWARD);
-         */
+        m1.setDirection(DcMotor.Direction.FORWARD);
+        m2.setDirection(DcMotor.Direction.REVERSE);
     }
 
     @Override
     public void start() {
         this.running = true;
 
-        fl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        fr.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        bl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        br.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        m0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        m1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        m2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        m3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         /**
          int currentPosition = (int)((fl.getCurrentPosition() +
@@ -84,29 +91,51 @@ public class DriveState extends State {
          bl.getCurrentPosition() +
          br.getCurrentPosition()) / 4.0);
          */
-        int currentPosition = ((fl.getCurrentPosition() + fr.getCurrentPosition()+
-                bl.getCurrentPosition() +
-                br.getCurrentPosition()) / 4);
+        int currentPosition = (m0.getCurrentPosition()
+                + m1.getCurrentPosition()
+                + m2.getCurrentPosition()
+                + m3.getCurrentPosition()) / 4; // in case the encoders are not exactly at 0
 
-        //position = currentPosition + distToTicks(distance);
-        position = currentPosition + TickService.inchesToTicks(distance);
+        // position = currentPosition + TickService.inchesToTicks(distance);
+
         //int flTargetPosition = getFlTargetPosition(); //need fl motor position for PID calculations
 
-        setTargets(); //set target positions for each motor
+        // calculate the separate positions (for x,y):
 
-        fl.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        fr.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        bl.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        br.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        // might need to reverse it, btw (meaning that we need -x for the position, based on the teleop)
 
-        //this part needs to be changed, because it sets the power twice
-        //consider just having a method for this, might be simpler
-        //also we need to account for the initial drive speed set by the user
-        //in the PID controller, set a threshold value for power so that it never goes under that amt (like 0.1)
-        pidDrive = new PIDController(1.7, 0.001, 0.6, hardwareMap, flTargetPosition, maxSpeed);
-        driveSpeed = pidDrive.PIDControl();
+        double distance_x = distance * Math.cos(Math.toRadians(direction));
+        double distance_y = distance * Math.sin(Math.toRadians(direction));
 
-        drive(driveSpeed);
+        position_x = currentPosition + TickService.inchesToTicks(distance_x);
+        position_y = currentPosition + TickService.inchesToTicks(distance_y);
+
+        m0.setTargetPosition(position_x);
+        m2.setTargetPosition(position_x);
+
+        m1.setTargetPosition(position_y);
+        m3.setTargetPosition(position_y);
+
+        // setTargets(); // set target positions for each motor
+
+        m0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        m1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        m2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        m3.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+        // separate PID control for x,y
+
+        // pidDrive_x = new PIDController(m0,1.7, 0.001, 0.6, hardwareMap, flTargetPosition, maxSpeed);
+        // pidDrive_y = new PIDController(m1,1.7, 0.001, 0.6, hardwareMap, flTargetPosition, maxSpeed);
+
+        // driveSpeed_x = pidDrive_x.PIDControl();
+        // driveSpeed_y = pidDrive_y.PIDControl();
+
+        driveSpeed_x = 0.7; // this is only for initial testing
+        driveSpeed_y = 0.7;
+
+        drive(driveSpeed_x,driveSpeed_y);
     }
 
     @Override
@@ -119,73 +148,71 @@ public class DriveState extends State {
          brReached = Math.abs(br.getCurrentPosition()) >= Math.abs(position) - threshold;
          */
 
-        flReached = Math.abs(fl.getCurrentPosition() - flTargetPosition) < threshold;
-        frReached = Math.abs(fr.getCurrentPosition() - frTargetPosition) < threshold;
-        blReached = Math.abs(bl.getCurrentPosition() - blTargetPosition) < threshold;
-        brReached = Math.abs(br.getCurrentPosition() - brTargetPosition) < threshold;
+        m0Reached = Math.abs(m0.getCurrentPosition() - position_x) < threshold;
+        m1Reached = Math.abs(m1.getCurrentPosition() - position_y) < threshold;
+        m2Reached = Math.abs(m2.getCurrentPosition() - position_x) < threshold;
+        m3Reached = Math.abs(m3.getCurrentPosition() - position_y) < threshold;
 
-        realSpeed = pidDrive.getActualSpeed();
+        // realSpeed = pidDrive.getActualSpeed();
 
-        if (flReached && frReached && blReached && brReached) {
+        if (m0Reached && m1Reached && m2Reached && m3Reached) {
             this.stop();
             this.goToNextState();
         }
         else {
-            driveSpeed = pidDrive.PIDControl();
-            drive(driveSpeed);
+            // driveSpeed_x = pidDrive_x.PIDControl();
+            // driveSpeed_y = pidDrive_y.PIDControl();
+            drive(driveSpeed_x,driveSpeed_y);
         }
 
-        telemetry.addLine("FL Diff: " + Math.abs(fl.getCurrentPosition() - flTargetPosition));
-        telemetry.addLine("FR Power: " + fl);
-        telemetry.addLine("BL Diff: " + Math.abs(bl.getCurrentPosition() - blTargetPosition));
-        telemetry.addLine("BR Diff: " + Math.abs(br.getCurrentPosition() - brTargetPosition));
-        telemetry.addLine("actualSpeed : " + realSpeed);
+        telemetry.addLine("FL Diff: " + Math.abs(m0.getCurrentPosition() - flTargetPosition));
+        telemetry.addLine("FR Diff: " + Math.abs(m1.getCurrentPosition() - flTargetPosition));
+        telemetry.addLine("BL Diff: " + Math.abs(m2.getCurrentPosition() - blTargetPosition));
+        telemetry.addLine("BR Diff: " + Math.abs(m3.getCurrentPosition() - brTargetPosition));
+        // telemetry.addLine("actualSpeed : " + realSpeed);
     }
 
     @Override
     public void stop() {
-        drive(0);
+        drive(0,0);
         this.running = false;
     }
 
     @Override
     public String toString() {
-        return "DriveState: Power = " + driveSpeed + ", Distance =" + distance;
+        return "DriveState: Power X = " + driveSpeed_x + ", Distance =" + distance;
     }
 
     //obsolete once all four enocders are used, can simply set a constant power
     //the target encoder value is what matters
-    public void drive(double power) {
-        switch (direction) {
-            case "front":
-                fl.setPower(power);
-                fr.setPower(power);
-                bl.setPower(power);
-                br.setPower(power);
-                break;
-            case "back":
-                fl.setPower(-power);
-                fr.setPower(-power);
-                bl.setPower(-power);
-                br.setPower(-power);
-                break;
-            case "left":
-                fl.setPower(-power);
-                fr.setPower(power);
-                bl.setPower(power);
-                br.setPower(-power);
-                break;
-            case "right":
-                fl.setPower(power);
-                fr.setPower(-power);
-                bl.setPower(-power);
-                br.setPower(power);
-                break;
-        }
+    // we need to adjust based on x and y, rip
+    public void drive(double driveSpeed_x, double driveSpeed_y) {
+        m0.setPower(driveSpeed_x);
+        m1.setPower(driveSpeed_y);
+        m2.setPower(driveSpeed_x);
+        m3.setPower(driveSpeed_y);
     }
 
     //target position changes based on direction of motion
     private void setTargets() {
+
+        /**
+
+        double m0_power = -gamepad1.left_stick_x; // left or right
+        double m2_power = -gamepad1.left_stick_x; // left or right
+
+        double m3_power = gamepad1.left_stick_y; // up or down
+        double m1_power = gamepad1.left_stick_y; // up or down
+
+        m0.setPower(m0_power);
+        m2.setPower(m2_power);
+
+        m3.setPower(m3_power);
+        m1.setPower(m1_power);
+
+        // for setting the target position, i handled the direction so like
+        // i think we can just set the target positions in the setup method
+
         switch (direction) {
             case "front":
                 flTargetPosition = position;
@@ -212,9 +239,12 @@ public class DriveState extends State {
                 brTargetPosition = position;
                 break;
         }
+
         fl.setTargetPosition(flTargetPosition);
         fr.setTargetPosition(frTargetPosition);
         bl.setTargetPosition(blTargetPosition);
         br.setTargetPosition(brTargetPosition);
+         *
+         */
     }
 }
