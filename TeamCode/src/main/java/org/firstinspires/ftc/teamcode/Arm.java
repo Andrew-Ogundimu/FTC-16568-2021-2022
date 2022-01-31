@@ -17,6 +17,6 @@ public class Arm {
         float targ2 = (float)Math.acos(
                 (dx*dx+dy*dy-segment1*segment1-segment2*segment2)/
                         (-2*segment1*segment2));
-        return new float[]{targ1,targ2};
+        return new float[]{targ1/(float)Math.PI,targ2/(float)Math.PI};
     }
 }

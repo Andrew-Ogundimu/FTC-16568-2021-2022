@@ -3,8 +3,8 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 public class BotMovement {
-    final float WHEEL_RADIUS = 5.08f; //wheel radius in cm
-    final float BOT_RADIUS = 26.3f; //bot radius in cm
+    final float WHEEL_RADIUS = 50.8f; //wheel radius in mm
+    final float BOT_RADIUS = 263f; //bot radius in mm
 
     public BotMovement(DcMotor[] motors) {
         motors[0].getCurrentPosition();
