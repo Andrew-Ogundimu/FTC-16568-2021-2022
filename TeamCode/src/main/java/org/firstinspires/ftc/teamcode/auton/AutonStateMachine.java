@@ -33,8 +33,8 @@ public class AutonStateMachine extends OpMode {
     @Override
     public void init() {
         State[] defaultStateSequence = {
-                new DriveState(84, 0.8, "front", hardwareMap, telemetry)
-
+                new DriveState(10, 0.9, 45, hardwareMap, telemetry),
+                new TurnState(90, hardwareMap, telemetry)
                 //new StartIntakeState(hardwareMap),
                 //new DriveState(10, 0.8, "front", hardwareMap, telemetry),
                 //new StopIntakeState(hardwareMap),
@@ -46,6 +46,8 @@ public class AutonStateMachine extends OpMode {
                 //new TurnState(90, hardwareMap),
                 //new TurnState(-45, hardwareMap)
         };
+
+        // i might need a state for turning the motor too, but that's basically just drive state in like 2 lines
 
         this.imu = IMU.getInstance(IMU.class, hardwareMap);
 
