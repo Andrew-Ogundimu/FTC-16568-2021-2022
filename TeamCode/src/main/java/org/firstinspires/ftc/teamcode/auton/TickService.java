@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.auton;
 
 public final class TickService {
 
-    private static final double wheelCircumference = (1.97 * 2) * Math.PI;
-    private static final int ticksPerTurn = 1120;
+    private static final double wheelCircumference = (2.0 * 2) * Math.PI;
+    private static final int ticksPerTurn = 1680;
 
     public static int inchesToTicks(double inches) {
         double circumferenceTraveled = inches / wheelCircumference;

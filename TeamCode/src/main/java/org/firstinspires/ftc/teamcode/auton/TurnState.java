@@ -192,7 +192,7 @@ public class TurnState extends State {
         // no direction change necessary
         m0.setPower(power);
         m1.setPower(power);
-        m2.setPower(power);
-        m3.setPower(power);
+        m2.setPower(-power);
+        m3.setPower(-power);
     }
 }
