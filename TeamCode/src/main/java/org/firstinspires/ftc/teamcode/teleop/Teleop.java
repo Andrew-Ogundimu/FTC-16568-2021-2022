@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
-import com.qualcomm.robotcore.hardware.ServoController;
 
 /**
  * This class is for controlling the robot with the gamepad controller.
@@ -54,14 +53,15 @@ public class Teleop extends OpMode
     private DcMotor m1 = null;
     private DcMotor m2 = null;
     private DcMotor m3 = null;
-    private Servo arm1_1 = null;
-    private Servo arm1_2 = null;
+    private DcMotor arm1 = null;
     private Servo arm2 = null;
     private CRServo wheel = null;
     private Servo grab = null;
-    private ServoController sc;
+    final double initAngle = 115;
+    final int tickRotation = 1680;
     private Arm total = new Arm(250f,250f);
-    private float[] targ_pos = new float[]{105f,60f};
+    final float[] start_pos = new float[]{105f,60f};
+    private float[] targ_pos = start_pos;
     private double hFOV = 60; //Horizontal FOV in degrees
     private double vFOV; //vertical FOV in degrees
     private double focal_length; //focal length in pixels
@@ -85,8 +85,8 @@ public class Teleop extends OpMode
      */
     @Override
     public void init() {
-        initVuforia();
-        initTfod();
+        //initVuforia();
+        //initTfod();
 
         object_sizes.put("Ball",69.9);
         object_sizes.put("Cube",50.8);
@@ -100,14 +100,15 @@ public class Teleop extends OpMode
         m1 = hardwareMap.get(DcMotor.class, "m1"); // fr
         m2 = hardwareMap.get(DcMotor.class, "m2"); // bl
         m3 = hardwareMap.get(DcMotor.class, "m3"); // br
-        arm1_1 = hardwareMap.get(Servo.class, "bottom_arm1");
-        arm1_2 = hardwareMap.get(Servo.class,"bottom_arm2");
+        arm1 = hardwareMap.get(DcMotor.class, "bottom_arm1");
         arm2 = hardwareMap.get(Servo.class,"top_arm1");
         grab = hardwareMap.get(Servo.class,"grab");
         wheel = hardwareMap.get(CRServo.class,"wheel");
-        sc = arm1_1.getController();
+        //arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
+        arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        arm1.setDirection(DcMotor.Direction.FORWARD);
         m0.setDirection(DcMotor.Direction.FORWARD);
         m3.setDirection(DcMotor.Direction.REVERSE);
 
@@ -132,7 +133,6 @@ public class Teleop extends OpMode
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
-        arm1_2.setDirection(Servo.Direction.REVERSE);
     }
 
     /*
@@ -140,8 +140,6 @@ public class Teleop extends OpMode
      */
     @Override
     public void init_loop() {
-        telemetry.addData("Servo Controller",sc.getServoPosition(arm1_1.getPortNumber()));
-        telemetry.addData("Servo Controller",sc.getServoPosition(arm1_2.getPortNumber()));
         //sc.setServoPosition(arm1_1.getPortNumber(),0.25);
     }
 
@@ -163,30 +161,55 @@ public class Teleop extends OpMode
     /*
      * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
      */
+    public float[] rotate(float[] point,float degrees) {
+        double d = Math.toDegrees((double)degrees);
+        return new float[]{(float)(Math.cos(d)*point[0]+Math.sin(d)*point[1]),(float)(Math.cos(d)*point[1]-Math.sin(d)*point[0])};
+    }
+    public double clip(double input) {
+        if (0<=input && input<=1) {
+            return input;
+        } else if (input>1) {
+            return 1;
+        } else if (input < 0) {
+            return 0;
+        }
+        return -1;
+    }
     @Override
     public void loop() {
-        //arm1_1.setPower(1.0f);
-        //arm1_2.setPower(1.0f);
-        if (gamepad1.a) {
-            grab.setPosition(1.0f);
+        arm1.setPower(1.0f);
+        if(gamepad1.a) {
+            wheel.setPower(1.0);
         } else {
-            grab.setPosition(0.0f);
+            wheel.setPower(0);
+        }
+        if (gamepad1.y) {
+            targ_pos = start_pos;
         }
 
-        double m0_power = -gamepad1.left_stick_x; // left or right
-        double m2_power = -gamepad1.left_stick_x; // left or right
+        telemetry.addData("Motor Pos:",Integer.toString(arm1.getCurrentPosition()));
+        if (gamepad1.right_trigger>0) {
+            grab.setPosition(0.0f);
+        } else {
+            grab.setPosition(1.0f);
+        }
 
-        double m3_power = gamepad1.left_stick_y; // up or down
-        double m1_power = gamepad1.left_stick_y; // up or down
+        float[] move_vec = new float[]{gamepad1.left_stick_x,gamepad1.left_stick_y};
+        float[] r = rotate(move_vec,45); //rotate the movement vector by 45 degrees
+        double m0_power = -r[0]; // left or right
+        double m2_power = -r[0]; // left or right
+
+        double m3_power = r[1]; // up or down
+        double m1_power = r[1]; // up or down
 
         targ_pos[0]+=(gamepad1.dpad_left ? 1:0)-(gamepad1.dpad_right ? 1:0);
         targ_pos[1]+=(gamepad1.dpad_up ? 1:0)-(gamepad1.dpad_down ? 1:0);
         telemetry.addData("Target (mm)",Float.toString(targ_pos[0])+","+Float.toString(targ_pos[1]));
         if (gamepad1.right_stick_x!=0) {
-            m0_power = gamepad1.right_stick_x;
-            m1_power = gamepad1.right_stick_x;
-            m2_power = -gamepad1.right_stick_x;
-            m3_power = -gamepad1.right_stick_x;
+            m0_power = -gamepad1.right_stick_x;
+            m1_power = -gamepad1.right_stick_x;
+            m2_power = gamepad1.right_stick_x;
+            m3_power = gamepad1.right_stick_x;
         }
 
         m0.setPower(m0_power);
@@ -198,11 +221,11 @@ public class Teleop extends OpMode
         telemetry.addData("Test","");
 
         float[] angles = total.CalcServos(targ_pos[0],targ_pos[1]);
-        arm1_1.setPosition((double)angles[0]);
-        arm1_2.setPosition((double)angles[0]);
-        arm2.setPosition((double)angles[1]);
+        arm2.setPosition(clip(1.0-(double)angles[1]));
+        arm1.setTargetPosition((int)(angles[0]*(tickRotation/2)-initAngle/180*tickRotation/2)); //some function that implements angles[0]
+        arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         telemetry.addData("Angles",Float.toString(angles[0]*180.0f)+" "+Float.toString(angles[1]*180.0f));
-
+        telemetry.addData("motor",arm1.getCurrentPosition());
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Gamepad", Float.toString(gamepad1.left_stick_x)+" "+Float.toString(gamepad1.left_stick_y));
