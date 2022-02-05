@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.auton;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 
 import org.firstinspires.ftc.teamcode.hardware.IMU;
 
@@ -9,8 +10,8 @@ import org.firstinspires.ftc.teamcode.hardware.IMU;
  * This is the autonomous state machine, where we make and run the states.
  */
 
-@Autonomous(name = "AutonStateMachine")
-public class AutonStateMachine extends OpMode {
+@Autonomous(name = "BlueNearPark")
+public class BlueNearPark extends OpMode {
 
     // INSTANCE VARIABLES
     /**
@@ -23,7 +24,7 @@ public class AutonStateMachine extends OpMode {
      */
     private State headerState;
 
-    private IMU imu;
+    // private IMU imu;
 
     // METHODS
 
@@ -32,24 +33,12 @@ public class AutonStateMachine extends OpMode {
      */
     @Override
     public void init() {
+
         State[] defaultStateSequence = {
-                new DriveState(10, 0.9, 45, hardwareMap, telemetry),
-                new TurnState(90, hardwareMap, telemetry)
-                //new StartIntakeState(hardwareMap),
-                //new DriveState(10, 0.8, "front", hardwareMap, telemetry),
-                //new StopIntakeState(hardwareMap),
-                //new StartRampState(hardwareMap),
-                //new DriveState(10, 0.8, "left", hardwareMap, telemetry),
-                //new StopRampState(hardwareMap)
-                //new StrafeState(12, 0.7, hardwareMap, "back", telemetry),
-                //new StrafeState(15, hardwareMap, "left", telemetry)
-                //new TurnState(90, hardwareMap),
-                //new TurnState(-45, hardwareMap)
+                new DriveState(36, 0.9, 240, hardwareMap, telemetry),
         };
 
-        // i might need a state for turning the motor too, but that's basically just drive state in like 2 lines
-
-        this.imu = IMU.getInstance(IMU.class, hardwareMap);
+        // this.imu = IMU.getInstance(IMU.class, hardwareMap);
 
         headerState = StateBuilder.buildStates(defaultStateSequence);
     }
@@ -59,7 +48,7 @@ public class AutonStateMachine extends OpMode {
      */
     @Override
     public void start() {
-        this.imu.setDefaultOrientation();
+        // this.imu.setDefaultOrientation();
         this.headerState.start();
     }
 
@@ -74,7 +63,7 @@ public class AutonStateMachine extends OpMode {
         // State telemetry
         telemetry.addLine("CurrentState: " + currentStateString);
         telemetry.addLine("Status: " + status);
-        telemetry.addLine("Orientation: " + this.imu.getOrientation());
+        // telemetry.addLine("Orientation: " + this.imu.getOrientation());
 
         // Update State
         if (running) {
@@ -93,6 +82,6 @@ public class AutonStateMachine extends OpMode {
             currentState.stop();
         }
 
-        this.imu.close();
+        // this.imu.close();
     }
 }

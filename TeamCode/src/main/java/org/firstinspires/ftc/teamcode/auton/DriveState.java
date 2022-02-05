@@ -11,6 +11,7 @@ import java.lang.Math;
 
 /**
  * This is the drive state for a holonomic drive train.
+ * Angles are measured relative to the front of the robot, with unit circle convention
  */
 
 public class DriveState extends State {
@@ -57,7 +58,7 @@ public class DriveState extends State {
         super(hardwareMap);
         this.distance = distance;
         this.maxSpeed = maxSpeed;
-        this.direction = direction;  // angle
+        this.direction = (direction + 45) % 360;  // angle, need to negate this
         this.telemetry = telemetry;
 
         // initialize the motors with the hardware map
