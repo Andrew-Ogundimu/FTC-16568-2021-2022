@@ -40,7 +40,7 @@ public class Teleop extends OpMode
         public float[] CalcServos(float dx, float dy) {
             float targ1 = (float)(Math.acos(
                     (segment2*segment2-segment2*segment2-dx*dx-dy*dy)/
-                            (-2*segment1*Math.sqrt(dx*dx+dy*dy)))+Math.atan(dy/dx));
+                            (-2*segment1*Math.sqrt(dx*dx+dy*dy)))+Math.atan2(dy,dx));
             float targ2 = (float)Math.acos(
                     (dx*dx+dy*dy-segment1*segment1-segment2*segment2)/
                             (-2*segment1*segment2));
@@ -55,13 +55,14 @@ public class Teleop extends OpMode
     private DcMotor m3 = null;
     private DcMotor arm1 = null;
     private Servo arm2 = null;
-    private CRServo wheel = null;
+    private DcMotor wheel = null;
     private Servo grab = null;
     final double initAngle = 115;
     final int tickRotation = 1680;
     private Arm total = new Arm(250f,250f);
     final float[] start_pos = new float[]{105f,60f};
     private float[] targ_pos = start_pos;
+    private float[] last_targ = targ_pos;
     private double hFOV = 60; //Horizontal FOV in degrees
     private double vFOV; //vertical FOV in degrees
     private double focal_length; //focal length in pixels
@@ -103,7 +104,7 @@ public class Teleop extends OpMode
         arm1 = hardwareMap.get(DcMotor.class, "bottom_arm1");
         arm2 = hardwareMap.get(Servo.class,"top_arm1");
         grab = hardwareMap.get(Servo.class,"grab");
-        wheel = hardwareMap.get(CRServo.class,"wheel");
+        wheel = hardwareMap.get(DcMotor.class,"wheel");
         //arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -180,6 +181,8 @@ public class Teleop extends OpMode
         arm1.setPower(1.0f);
         if(gamepad1.a) {
             wheel.setPower(1.0);
+        } else if (gamepad1.b) {
+            wheel.setPower(-1.0);
         } else {
             wheel.setPower(0);
         }
@@ -202,8 +205,11 @@ public class Teleop extends OpMode
         double m3_power = r[1]; // up or down
         double m1_power = r[1]; // up or down
 
-        targ_pos[0]+=(gamepad1.dpad_left ? 1:0)-(gamepad1.dpad_right ? 1:0);
+        targ_pos[0]+=(gamepad1.left_trigger > 0 ?1:0)-(gamepad1.left_bumper ? 1:0);
         targ_pos[1]+=(gamepad1.dpad_up ? 1:0)-(gamepad1.dpad_down ? 1:0);
+        if (Math.sqrt(targ_pos[0]*targ_pos[0]+targ_pos[1]*targ_pos[1])>total.segment1+total.segment2) {
+            targ_pos = last_targ;
+        }
         telemetry.addData("Target (mm)",Float.toString(targ_pos[0])+","+Float.toString(targ_pos[1]));
         if (gamepad1.right_stick_x!=0) {
             m0_power = -gamepad1.right_stick_x;
@@ -230,6 +236,7 @@ public class Teleop extends OpMode
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Gamepad", Float.toString(gamepad1.left_stick_x)+" "+Float.toString(gamepad1.left_stick_y));
         // telemetry.addData("Motors", "left (%.2f), right (%.2f)", horizWheel,vertWheel);
+        last_targ = targ_pos;
     }
 
     /*
