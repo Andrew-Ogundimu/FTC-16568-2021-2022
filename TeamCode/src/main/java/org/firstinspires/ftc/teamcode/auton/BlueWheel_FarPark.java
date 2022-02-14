@@ -35,14 +35,13 @@ public class BlueWheel_FarPark extends OpMode {
     public void init() {
 
         State[] defaultStateSequence = {
+                new DriveState(5, 0.9, -90, hardwareMap, telemetry),
                 new DriveState(11.5, 0.9, 180, hardwareMap, telemetry),
-                new WheelState(-1, 5, hardwareMap, telemetry),
-                new DriveState(98, 0.9, 0, hardwareMap, telemetry),
-                //new TurnArcState(90, hardwareMap, telemetry),
-                //new DriveState(10, 0.9, 0, hardwareMap, telemetry),
+                new WheelState(1, 5, hardwareMap, telemetry),
+                new DriveState(11.5, 0.9, 0, hardwareMap, telemetry),
+                new DriveState(5, 0.9, 90, hardwareMap, telemetry),
+                new DriveState(98-11.5, 0.9, 0, hardwareMap, telemetry),
         };
-
-        // this.imu = IMU.getInstance(IMU.class, hardwareMap);
 
         headerState = StateBuilder.buildStates(defaultStateSequence);
     }
@@ -52,7 +51,6 @@ public class BlueWheel_FarPark extends OpMode {
      */
     @Override
     public void start() {
-        // this.imu.setDefaultOrientation();
         this.headerState.start();
     }
 
@@ -61,6 +59,11 @@ public class BlueWheel_FarPark extends OpMode {
         State currentState = headerState.getCurrentState();
         boolean running = currentState != null;
 
+        // Update State
+        if (running) {
+            currentState.update();
+        }
+
         String status = running ? "RUNNING" : "COMPLETED";
         String currentStateString = running ? currentState.toString() : "None";
 
@@ -68,11 +71,6 @@ public class BlueWheel_FarPark extends OpMode {
         telemetry.addLine("CurrentState: " + currentStateString);
         telemetry.addLine("Status: " + status);
         // telemetry.addLine("Orientation: " + this.imu.getOrientation());
-
-        // Update State
-        if (running) {
-            currentState.update();
-        }
 
         // Version telemetry.
         telemetry.addLine("Version: " + this.VERSION);

@@ -86,55 +86,33 @@ public class DriveState extends State {
         m2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         m3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        /**
-         int currentPosition = (int)((fl.getCurrentPosition() +
-         fr.getCurrentPosition() +
-         bl.getCurrentPosition() +
-         br.getCurrentPosition()) / 4.0);
-         */
         int currentPosition = (m0.getCurrentPosition()
                 + m1.getCurrentPosition()
                 + m2.getCurrentPosition()
-                + m3.getCurrentPosition()) / 4; // in case the encoders are not exactly at 0
+                + m3.getCurrentPosition()) / 4; // obtain the initial position (should be 0)
 
-        // position = currentPosition + TickService.inchesToTicks(distance);
+        double distance_x = distance * Math.cos(Math.toRadians(direction)); // calculate the distance to travel in the x-direction
+        double distance_y = distance * Math.sin(Math.toRadians(direction)); // calculate the distance to travel in the y-direction
 
-        //int flTargetPosition = getFlTargetPosition(); //need fl motor position for PID calculations
-
-        // calculate the separate positions (for x,y):
-
-        // might need to reverse it, btw (meaning that we need -x for the position, based on the teleop)
-
-        double distance_x = distance * Math.cos(Math.toRadians(direction));
-        double distance_y = distance * Math.sin(Math.toRadians(direction));
-
-        position_x = currentPosition + TickService.inchesToTicks(distance_x);
+        position_x = currentPosition + TickService.inchesToTicks(distance_x); // convert distance to ticks
         position_y = currentPosition + TickService.inchesToTicks(distance_y);
 
-        m0.setTargetPosition(position_x);
+        m0.setTargetPosition(position_x); // set power to the motors in the x-direction
         m2.setTargetPosition(position_x);
 
-        m1.setTargetPosition(position_y);
+        m1.setTargetPosition(position_y);  // set power to the motors in the y-direction
         m3.setTargetPosition(position_y);
-
-        // setTargets(); // set target positions for each motor
 
         m0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         m1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         m2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         m3.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-
-        // separate PID control for x,y
-
-        // pidDrive_x = new PIDController(m0,1.7, 0.001, 0.6, hardwareMap, flTargetPosition, maxSpeed);
-        // pidDrive_y = new PIDController(m1,1.7, 0.001, 0.6, hardwareMap, flTargetPosition, maxSpeed);
-
-        // driveSpeed_x = pidDrive_x.PIDControl();
+        // driveSpeed_x = pidDrive_x.PIDControl(); // calculate unique drive speeds for the motors in the x and y directions
         // driveSpeed_y = pidDrive_y.PIDControl();
 
-        driveSpeed_x = 0.7; // this is only for initial testing
-        driveSpeed_y = 0.7;
+        driveSpeed_x = maxSpeed;
+        driveSpeed_y = maxSpeed;
 
         drive(driveSpeed_x,driveSpeed_y);
     }

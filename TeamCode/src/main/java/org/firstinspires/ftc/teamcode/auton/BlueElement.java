@@ -8,10 +8,11 @@ import org.firstinspires.ftc.teamcode.hardware.IMU;
 
 /**
  * This is the autonomous state machine, where we make and run the states.
+ * This class is for depositing the pre-loaded element into the shipping container
  */
 
-@Autonomous(name = "RedWheel_FarPark")
-public class RedWheel_FarPark extends OpMode {
+@Autonomous(name = "BlueElement")
+public class BlueElement extends OpMode {
 
     // INSTANCE VARIABLES
     /**
@@ -35,16 +36,15 @@ public class RedWheel_FarPark extends OpMode {
     public void init() {
 
         State[] defaultStateSequence = {
-                new DriveState(5, 0.9, 0, hardwareMap, telemetry),
-                new DriveState(14, 0.9, 90, hardwareMap, telemetry),
-                new WheelState(-1, 5, hardwareMap, telemetry),
-                new DriveState(4, 0.9, 270, hardwareMap, telemetry),
-                new DriveState(5, 0.9, 180, hardwareMap, telemetry),
-                new TurnArcState(-90, hardwareMap, telemetry),
-                new DriveState(100, 0.9, 0, hardwareMap, telemetry),
+                new GrabState(1.0,1, hardwareMap, telemetry),
+                new SensorState(hardwareMap,telemetry),
+                new DriveState(15,0.7, -90, hardwareMap, telemetry),
+                new DriveState(7,0.7, 0, hardwareMap, telemetry),
+                new DriveState(15,0.7, 90, hardwareMap, telemetry),
+                new ArmState(262,0, hardwareMap,telemetry),
+                new DriveState(7,0.7,0,hardwareMap,telemetry),
+                new GrabState(0.0,5, hardwareMap, telemetry),
         };
-
-        // this.imu = IMU.getInstance(IMU.class, hardwareMap);
 
         headerState = StateBuilder.buildStates(defaultStateSequence);
     }
@@ -54,7 +54,6 @@ public class RedWheel_FarPark extends OpMode {
      */
     @Override
     public void start() {
-        // this.imu.setDefaultOrientation();
         this.headerState.start();
     }
 
@@ -68,8 +67,6 @@ public class RedWheel_FarPark extends OpMode {
             currentState.update();
         }
 
-        // Version telemetry.
-        telemetry.addLine("Version: " + this.VERSION);
         String status = running ? "RUNNING" : "COMPLETED";
         String currentStateString = running ? currentState.toString() : "None";
 
@@ -77,6 +74,9 @@ public class RedWheel_FarPark extends OpMode {
         telemetry.addLine("CurrentState: " + currentStateString);
         telemetry.addLine("Status: " + status);
         // telemetry.addLine("Orientation: " + this.imu.getOrientation());
+
+        // Version telemetry.
+        telemetry.addLine("Version: " + this.VERSION);
     }
 
     @Override
@@ -90,3 +90,4 @@ public class RedWheel_FarPark extends OpMode {
         // this.imu.close();
     }
 }
+
