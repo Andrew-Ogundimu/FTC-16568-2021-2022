@@ -20,6 +20,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +42,7 @@ public class Teleop extends OpMode
         public float[] CalcServos(float dx, float dy) {
             float targ1 = (float)(Math.acos(
                     (segment2*segment2-segment2*segment2-dx*dx-dy*dy)/
-                            (-2*segment1*Math.sqrt(dx*dx+dy*dy)))+Math.atan(dy/dx));
+                            (-2*segment1*Math.sqrt(dx*dx+dy*dy)))+Math.atan2(dy,dx));
             float targ2 = (float)Math.acos(
                     (dx*dx+dy*dy-segment1*segment1-segment2*segment2)/
                             (-2*segment1*segment2));
@@ -55,13 +57,15 @@ public class Teleop extends OpMode
     private DcMotor m3 = null;
     private DcMotor arm1 = null;
     private Servo arm2 = null;
-    private CRServo wheel = null;
+    private DcMotor wheel = null;
     private Servo grab = null;
-    final double initAngle = 115;
     final int tickRotation = 1680;
     private Arm total = new Arm(250f,250f);
+    private float arm_speed = 3;
     final float[] start_pos = new float[]{105f,60f};
-    private float[] targ_pos = start_pos;
+    final double initAngle = (double)(total.CalcServos(start_pos[0],start_pos[1])[0]*180);
+    private float[] targ_pos = start_pos.clone();
+    private float[] last_targ = targ_pos.clone();
     private double hFOV = 60; //Horizontal FOV in degrees
     private double vFOV; //vertical FOV in degrees
     private double focal_length; //focal length in pixels
@@ -103,7 +107,7 @@ public class Teleop extends OpMode
         arm1 = hardwareMap.get(DcMotor.class, "bottom_arm1");
         arm2 = hardwareMap.get(Servo.class,"top_arm1");
         grab = hardwareMap.get(Servo.class,"grab");
-        wheel = hardwareMap.get(CRServo.class,"wheel");
+        wheel = hardwareMap.get(DcMotor.class,"wheel");
         //arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -163,7 +167,7 @@ public class Teleop extends OpMode
      */
     public float[] rotate(float[] point,float degrees) {
         double d = Math.toDegrees((double)degrees);
-        return new float[]{(float)(Math.cos(d)*point[0]+Math.sin(d)*point[1]),(float)(Math.cos(d)*point[1]-Math.sin(d)*point[0])};
+        return new float[]{(float)(Math.cos(d)*point[0]-Math.sin(d)*point[1]),(float)(Math.cos(d)*point[1]+Math.sin(d)*point[0])};
     }
     public double clip(double input) {
         if (0<=input && input<=1) {
@@ -180,13 +184,19 @@ public class Teleop extends OpMode
         arm1.setPower(1.0f);
         if(gamepad1.a) {
             wheel.setPower(1.0);
+        } else if (gamepad1.b) {
+            wheel.setPower(-1.0);
         } else {
             wheel.setPower(0);
         }
         if (gamepad1.y) {
-            targ_pos = start_pos;
+            targ_pos = start_pos.clone();
+        }
+        if (gamepad2.x) {
+            targ_pos = new float[]{357,215};
         }
 
+        telemetry.addData("Start:",Float.toString(start_pos[0])+" "+Float.toString(start_pos[1]));
         telemetry.addData("Motor Pos:",Integer.toString(arm1.getCurrentPosition()));
         if (gamepad1.right_trigger>0) {
             grab.setPosition(0.0f);
@@ -195,15 +205,18 @@ public class Teleop extends OpMode
         }
 
         float[] move_vec = new float[]{gamepad1.left_stick_x,gamepad1.left_stick_y};
-        float[] r = rotate(move_vec,45); //rotate the movement vector by 45 degrees
+        float[] r = rotate(move_vec,-45); //rotate the movement vector by 45 degrees
         double m0_power = -r[0]; // left or right
         double m2_power = -r[0]; // left or right
 
         double m3_power = r[1]; // up or down
         double m1_power = r[1]; // up or down
 
-        targ_pos[0]+=(gamepad1.dpad_left ? 1:0)-(gamepad1.dpad_right ? 1:0);
-        targ_pos[1]+=(gamepad1.dpad_up ? 1:0)-(gamepad1.dpad_down ? 1:0);
+        targ_pos[0]+=(gamepad1.left_trigger > 0 ?1:0)*arm_speed-(gamepad1.left_bumper ? 1:0)*arm_speed;
+        targ_pos[1]+=(gamepad1.dpad_up ? 1:0)*arm_speed-(gamepad1.dpad_down ? 1:0)*arm_speed;
+        if ((Math.sqrt(targ_pos[0]*targ_pos[0]+targ_pos[1]*targ_pos[1])>total.segment1+total.segment2) || (Arrays.asList(targ_pos).contains(null))) {
+            targ_pos = last_targ.clone();
+        }
         telemetry.addData("Target (mm)",Float.toString(targ_pos[0])+","+Float.toString(targ_pos[1]));
         if (gamepad1.right_stick_x!=0) {
             m0_power = -gamepad1.right_stick_x;
@@ -222,7 +235,7 @@ public class Teleop extends OpMode
 
         float[] angles = total.CalcServos(targ_pos[0],targ_pos[1]);
         arm2.setPosition(clip(1.0-(double)angles[1]));
-        arm1.setTargetPosition((int)(angles[0]*(tickRotation/2)-initAngle/180*tickRotation/2)); //some function that implements angles[0]
+        arm1.setTargetPosition((int)(-((angles[0])*(tickRotation/2)-initAngle/180*tickRotation/2))); //some function that implements angles[0]
         arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         telemetry.addData("Angles",Float.toString(angles[0]*180.0f)+" "+Float.toString(angles[1]*180.0f));
         telemetry.addData("motor",arm1.getCurrentPosition());
@@ -230,6 +243,7 @@ public class Teleop extends OpMode
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Gamepad", Float.toString(gamepad1.left_stick_x)+" "+Float.toString(gamepad1.left_stick_y));
         // telemetry.addData("Motors", "left (%.2f), right (%.2f)", horizWheel,vertWheel);
+        last_targ = targ_pos.clone();
     }
 
     /*
@@ -237,35 +251,6 @@ public class Teleop extends OpMode
      */
     @Override
     public void stop() {
-    }
-
-    /**
-     * Initialize the TensorFlow Object Detection engine.
-     */
-    private void initTfod() {
-        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfodParameters.minResultConfidence = 0.8f;
-        tfodParameters.isModelTensorFlow2 = true;
-        tfodParameters.inputSize = 320;
-        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
-    }
-
-    private void initVuforia() {
-        /*
-         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-         */
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
-
-        //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
-        // Loading trackables is not necessary for the TensorFlow Object Detection engine.
     }
 
 }
