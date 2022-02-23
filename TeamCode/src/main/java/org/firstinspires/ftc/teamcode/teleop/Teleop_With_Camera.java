@@ -7,6 +7,7 @@ package org.firstinspires.ftc.teamcode.teleop;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -332,7 +333,7 @@ public class Teleop_With_Camera extends OpMode
     private DcMotor arm1 = null;
     private Servo arm2 = null;
     private DcMotor wheel = null;
-    private Servo grab = null;
+    private CRServo grab = null;
     private double servo_range = 180;
     OpenCvWebcam webcam;
     SkystoneDeterminationPipeline pipeline;
@@ -404,7 +405,7 @@ public class Teleop_With_Camera extends OpMode
         m3 = hardwareMap.get(DcMotor.class, "m3"); // br
         arm1 = hardwareMap.get(DcMotor.class, "bottom_arm1");
         arm2 = hardwareMap.get(Servo.class,"top_arm1");
-        grab = hardwareMap.get(Servo.class,"grab");
+        grab = hardwareMap.get(CRServo.class,"grab");
         wheel = hardwareMap.get(DcMotor.class,"wheel");
         //arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         // Most robots need the motor on one side to be reversed to drive forward
@@ -464,7 +465,7 @@ public class Teleop_With_Camera extends OpMode
      * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
      */
     public float[] rotate(float[] point,float degrees) {
-        double d = Math.toDegrees((double)degrees);
+        double d = Math.toRadians((double)degrees);
         return new float[]{(float)(Math.cos(d)*point[0]-Math.sin(d)*point[1]),(float)(Math.cos(d)*point[1]+Math.sin(d)*point[0])};
     }
     public double clip(double input) {
@@ -503,9 +504,9 @@ public class Teleop_With_Camera extends OpMode
         telemetry.addData("Start:",Float.toString(start_pos[0])+" "+Float.toString(start_pos[1]));
         telemetry.addData("Motor Pos:",Integer.toString(arm1.getCurrentPosition()));
         if (gamepad1.right_trigger>0) {
-            grab.setPosition(0.0f);
+            grab.setPower(1.0);
         } else {
-            grab.setPosition(1.0f);
+            grab.setPower(0.0);
         }
 
         float[] move_vec = new float[]{gamepad1.left_stick_x,gamepad1.left_stick_y};
@@ -538,8 +539,8 @@ public class Teleop_With_Camera extends OpMode
         telemetry.addData("Test","");
 
         float[] angles = total.CalcServos(targ_pos[0],targ_pos[1]);
-        arm2.setPosition(clip(1.0-(double)angles[1])*180/servo_range);
-        arm1.setTargetPosition((int)(-((angles[0])*(tickRotation/2)-initAngle/180*tickRotation/2))); //some function that implements angles[0]
+        arm2.setPosition(clip((double)angles[1])*180/servo_range);
+        arm1.setTargetPosition((int)(((angles[0])*(tickRotation/2)-initAngle/180*tickRotation/2))); //some function that implements angles[0]
         arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         telemetry.addData("Angles",Float.toString(angles[0]*180.0f)+" "+Float.toString(angles[1]*180.0f));
         telemetry.addData("motor",arm1.getCurrentPosition());
