@@ -62,6 +62,22 @@ public abstract class State {
         this.nextState = nextState;
     }
 
+    /**
+     * Insert states after the current state
+     * @param stateSequence
+     */
+    public void insert(State[] stateSequence) {
+        // we need to insert this state sequence, and we need the next state too
+        State currentState = this;
+        // and we know what the next state should be, so simply chain them together
+        for (State nextState : stateSequence) { // for each state in the sequence
+            nextState.setNextState(nextState);
+            currentState = nextState;
+        }
+
+        //return stateSequence[0];
+    }
+
     // ABSTRACT METHODS
     /**
      * Gets the State as a string.

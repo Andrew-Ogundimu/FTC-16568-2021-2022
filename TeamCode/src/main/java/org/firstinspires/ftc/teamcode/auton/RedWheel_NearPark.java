@@ -35,9 +35,10 @@ public class RedWheel_NearPark extends OpMode {
     public void init() {
 
         State[] defaultStateSequence = {
+                new DriveState(5, 0.9, 0, hardwareMap, telemetry),
                 new DriveState(14, 0.9, 90, hardwareMap, telemetry),
-                new WheelState(1, 5, hardwareMap, telemetry),
-                new DriveState(27, 0.9, 0, hardwareMap, telemetry),
+                new WheelState(-1, 5, hardwareMap, telemetry),
+                new DriveState(22, 0.9, 0, hardwareMap, telemetry),
                 //new TurnArcState(90, hardwareMap, telemetry),
                 //new DriveState(10, 0.9, 0, hardwareMap, telemetry),
         };

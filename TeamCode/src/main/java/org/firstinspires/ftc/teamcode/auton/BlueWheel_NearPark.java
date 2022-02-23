@@ -35,9 +35,12 @@ public class BlueWheel_NearPark extends OpMode {
     public void init() {
 
         State[] defaultStateSequence = {
-                new DriveState(11.5, 0.9, 180, hardwareMap, telemetry),
-                new WheelState(-1, 5, hardwareMap, telemetry),
-                new DriveState(30, 0.9, -90, hardwareMap, telemetry),
+                new DriveState(5, 0.9, -90, hardwareMap, telemetry),
+                new DriveState(12, 0.9, 180, hardwareMap, telemetry),
+                new WheelState(1, 5, hardwareMap, telemetry),
+                new DriveState(24, 0.9, -90, hardwareMap, telemetry),
+                new DriveState(6, 0.9, 180, hardwareMap, telemetry),
+                // new DriveState(30-11.5, 0.9, -90, hardwareMap, telemetry),
         };
 
         // this.imu = IMU.getInstance(IMU.class, hardwareMap);
