@@ -17,7 +17,7 @@ public class GrabState extends State {
     private Telemetry telemetry;
     private int time;
     private long initial_time;
-    private Servo grab = null;
+    private CRServo grab = null;
     private double position;
 
     public GrabState(double position, int time, HardwareMap hardwareMap, Telemetry telemetry) {
@@ -27,7 +27,7 @@ public class GrabState extends State {
         this.telemetry = telemetry;
 
         // initialize the servo with the hardware map
-        grab = hardwareMap.get(Servo.class,"grab");
+        grab = hardwareMap.get(CRServo.class,"grab");
     }
 
     @Override
@@ -35,7 +35,7 @@ public class GrabState extends State {
         this.running = true;
         initial_time = System.currentTimeMillis();
 
-        grab.setPosition(position);
+        grab.setPower(position);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class GrabState extends State {
             this.goToNextState();
         }
 
-        telemetry.addLine("Servo power: " + grab.getPosition());
+        telemetry.addLine("Servo power: " + grab.getPower());
     }
 
     @Override
@@ -58,6 +58,6 @@ public class GrabState extends State {
 
     @Override
     public String toString() {
-        return "Servo Position = " + grab.getPosition();
+        return "Servo Position = " + grab.getPower();
     }
 }
