@@ -491,15 +491,6 @@ public class Teleop_With_Camera extends OpMode
         if (gamepad1.y) {
             targ_pos = start_pos.clone();
         }
-        if (gamepad1.x) {
-            if (pipeline.getAnalysis() == SkystoneDeterminationPipeline.SkystonePosition.LEFT) {
-                targ_pos = new float[]{262, 370};
-            } else if (pipeline.getAnalysis() == SkystoneDeterminationPipeline.SkystonePosition.CENTER) {
-                targ_pos = new float[]{262, 265};
-            } else if (pipeline.getAnalysis() == SkystoneDeterminationPipeline.SkystonePosition.RIGHT) {
-                targ_pos = new float[]{262, 153};
-            }
-        }
 
         telemetry.addData("Start:",Float.toString(start_pos[0])+" "+Float.toString(start_pos[1]));
         telemetry.addData("Motor Pos:",Integer.toString(arm1.getCurrentPosition()));
@@ -517,8 +508,8 @@ public class Teleop_With_Camera extends OpMode
         double m3_power = r[1]; // up or down
         double m1_power = r[1]; // up or down
 
-        targ_pos[0]+=(gamepad1.left_trigger > 0 ?1:0)*arm_speed-(gamepad1.left_bumper ? 1:0)*arm_speed;
-        targ_pos[1]+=(gamepad1.dpad_up ? 1:0)*arm_speed-(gamepad1.dpad_down ? 1:0)*arm_speed;
+        targ_pos[0]+=(gamepad1.dpad_up ?1:0)*arm_speed-(gamepad1.dpad_down ? 1:0)*arm_speed;
+        targ_pos[1]+=(gamepad1.left_bumper ? 1:0)*arm_speed-(gamepad1.left_trigger>0 ? 1:0)*arm_speed;
         if ((Math.sqrt(targ_pos[0]*targ_pos[0]+targ_pos[1]*targ_pos[1])>total.segment1+total.segment2) || (Arrays.asList(targ_pos).contains(null))) {
             targ_pos = last_targ.clone();
         }
