@@ -334,7 +334,7 @@ public class Teleop_With_Camera extends OpMode
     private Servo arm2 = null;
     private DcMotor wheel = null;
     private CRServo grab = null;
-    private double servo_range = 180;
+    private double servo_range = 280;
     OpenCvWebcam webcam;
     SkystoneDeterminationPipeline pipeline;
     final int tickRotation = 1680;
@@ -530,7 +530,7 @@ public class Teleop_With_Camera extends OpMode
         telemetry.addData("Test","");
 
         float[] angles = total.CalcServos(targ_pos[0],targ_pos[1]);
-        arm2.setPosition(clip((double)angles[1])*180/servo_range);
+        arm2.setPosition(clip((double)angles[1])*180/servo_range+(servo_range-180)/servo_range);
         arm1.setTargetPosition((int)(((angles[0])*(tickRotation/2)-initAngle/180*tickRotation/2))); //some function that implements angles[0]
         arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         telemetry.addData("Angles",Float.toString(angles[0]*180.0f)+" "+Float.toString(angles[1]*180.0f));
