@@ -339,11 +339,12 @@ public class Teleop_With_Camera extends OpMode
     SkystoneDeterminationPipeline pipeline;
     final int tickRotation = 1680;
     private Arm total = new Arm(250f,250f);
-    private float arm_speed = 3;
+    private float arm_speed = 3.5f;
     final float[] start_pos = new float[]{105f,60f};
     final double initAngle = (double)(total.CalcServos(start_pos[0],start_pos[1])[0]*180);
     private float[] targ_pos = start_pos.clone();
     private float[] last_targ = targ_pos.clone();
+    final float[] grab_pos = new float[]{389f,-54f};
     private double hFOV = 60; //Horizontal FOV in degrees
     private double vFOV; //vertical FOV in degrees
     private double focal_length; //focal length in pixels
@@ -480,7 +481,7 @@ public class Teleop_With_Camera extends OpMode
     }
     @Override
     public void loop() {
-        arm1.setPower(1.0f);
+        arm1.setPower(0.8f);
         if(gamepad1.a) {
             wheel.setPower(1.0);
         } else if (gamepad1.b) {
@@ -496,8 +497,14 @@ public class Teleop_With_Camera extends OpMode
         telemetry.addData("Motor Pos:",Integer.toString(arm1.getCurrentPosition()));
         if (gamepad1.right_trigger>0) {
             grab.setPower(1.0);
+        } else if (gamepad1.right_bumper){
+            grab.setPower(-1.0);
         } else {
             grab.setPower(0.0);
+        }
+
+        if (gamepad1.x) {
+            targ_pos = grab_pos.clone();
         }
 
         float[] move_vec = new float[]{gamepad1.left_stick_x,gamepad1.left_stick_y};
@@ -530,7 +537,7 @@ public class Teleop_With_Camera extends OpMode
         telemetry.addData("Test","");
 
         float[] angles = total.CalcServos(targ_pos[0],targ_pos[1]);
-        arm2.setPosition(clip((double)angles[1])*180/servo_range+(servo_range-180)/servo_range);
+        arm2.setPosition(clip(angles[1]*180/servo_range+(servo_range-180)/servo_range));
         arm1.setTargetPosition((int)(((angles[0])*(tickRotation/2)-initAngle/180*tickRotation/2))); //some function that implements angles[0]
         arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         telemetry.addData("Angles",Float.toString(angles[0]*180.0f)+" "+Float.toString(angles[1]*180.0f));
