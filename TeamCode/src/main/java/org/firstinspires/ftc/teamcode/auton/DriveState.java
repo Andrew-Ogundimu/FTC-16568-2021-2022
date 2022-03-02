@@ -58,7 +58,7 @@ public class DriveState extends State {
         super(hardwareMap);
         this.distance = distance;
         this.maxSpeed = maxSpeed;
-        this.direction = (direction + 45) % 360;  // angle, need to negate this
+        this.direction = (direction - 45) % 360;  // angle, need to negate this
         this.telemetry = telemetry;
 
         // initialize the motors with the hardware map
@@ -70,11 +70,19 @@ public class DriveState extends State {
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
+
+        /**
         m0.setDirection(DcMotor.Direction.FORWARD);
         m3.setDirection(DcMotor.Direction.REVERSE);
 
         m1.setDirection(DcMotor.Direction.FORWARD);
         m2.setDirection(DcMotor.Direction.REVERSE);
+         */
+        m0.setDirection(DcMotor.Direction.REVERSE);
+        m3.setDirection(DcMotor.Direction.FORWARD);
+
+        m1.setDirection(DcMotor.Direction.REVERSE);
+        m2.setDirection(DcMotor.Direction.FORWARD);
     }
 
     @Override
@@ -174,7 +182,6 @@ public class DriveState extends State {
 
     //target position changes based on direction of motion
     private void setTargets() {
-
         /**
 
         double m0_power = -gamepad1.left_stick_x; // left or right

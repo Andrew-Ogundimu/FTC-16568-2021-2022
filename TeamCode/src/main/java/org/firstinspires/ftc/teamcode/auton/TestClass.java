@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.hardware.IMU;
  * This class is for depositing the pre-loaded element into the shipping container
  */
 
-@Autonomous(name = "BlueElement")
-public class BlueElement extends OpMode {
+@Autonomous(name = "TestClass")
+public class TestClass extends OpMode {
 
     // INSTANCE VARIABLES
     /**
@@ -36,15 +36,7 @@ public class BlueElement extends OpMode {
     public void init() {
 
         State[] defaultStateSequence = {
-                new GrabState(-1.0,1, hardwareMap, telemetry),  // grab element
-                new SensorState(hardwareMap,telemetry), // detect capstone position
-                new DriveState(5, 0.7, 90, hardwareMap,telemetry), // move away from the wall
-                new TurnArcState(90,hardwareMap,telemetry), // turn so that the arm faces forwards
-                new DriveState(24,0.7, 90, hardwareMap, telemetry), // move sideways (away from elements)
-                new DriveState(17,0.7, 0, hardwareMap, telemetry), // move forwards (towards the shipping hub)
-                new ArmState(262,0, hardwareMap,telemetry), // raise the arm to the specified level
-                new DriveState(7,0.7,0,hardwareMap,telemetry), // move forwards (towards the shipping hub)
-                new GrabState(1.0,1, hardwareMap, telemetry), // release element
+                new DriveState(5, 0.7, 90, hardwareMap,telemetry),
         };
 
         headerState = StateBuilder.buildStates(defaultStateSequence);

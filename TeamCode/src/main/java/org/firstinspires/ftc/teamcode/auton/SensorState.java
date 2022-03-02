@@ -39,6 +39,12 @@ public class SensorState extends State {
 
     private double total = 0;
 
+    private boolean finishedIterations = false;
+
+    private State current_state = this;
+
+    private int height = 0;
+
     public SensorState(HardwareMap hardwareMap, Telemetry telemetry) {
         super(hardwareMap);
         this.telemetry = telemetry;
@@ -76,57 +82,41 @@ public class SensorState extends State {
     @Override
     public void update() {
 
-        long elapsed_milliseconds = System.currentTimeMillis() - prev_time;
+        // long elapsed_milliseconds = System.currentTimeMillis() - prev_time;
 
-        if (elapsed_milliseconds > 50) { // 50 milliseconds have passed since the previous iteration
-            prev_time = System.currentTimeMillis(); // reset the time
+        // prev_time = System.currentTimeMillis(); // reset the time
 
-            position = pipeline.getAnalysis();
+        position = pipeline.getAnalysis();
 
-            if (position == SensorState.SkystoneDeterminationPipeline.SkystonePosition.LEFT) {
-                total += 1;
-            }
-            else if (position == SensorState.SkystoneDeterminationPipeline.SkystonePosition.CENTER) {
-                total += 2;
-            }
-            else {
-                total += 3;
-            }
-
-            num_iter++;
+        if (position == SensorState.SkystoneDeterminationPipeline.SkystonePosition.LEFT) {
+            total = 1;
+            height = 100;
+        }
+        else if (position == SensorState.SkystoneDeterminationPipeline.SkystonePosition.CENTER) {
+            total = 2;
+            height = 200;
+        }
+        else {
+            total = 3;
+            height = 300;
         }
 
-        if (num_iter == 10) { // 10 frames analyzed
-            int final_value = (int) (total / num_iter);
-            int height;
+        while (current_state.nextState != null) {
+            telemetry.addLine("Next State: " + current_state.nextState);
+            telemetry.update();
+            current_state = current_state.nextState;
+            if (current_state.getClass() == ArmState.class) {
+                ArmState arm = (ArmState) current_state;
+                arm.setHeight(height);
 
-            if (final_value == 1) { // left
-                height = 100;
+                this.stop();
+                this.goToNextState();
             }
-            else if (final_value == 2) { // center
-                height = 200;
-            }
-            else { // right
-                height = 300;
-            }
-
-            // iterate through the subsequent states and find the arm state
-
-            State current_state = this;
-
-            while (current_state.nextState != null) {
-                State next_state = current_state.nextState;
-                if (next_state instanceof ArmState) {
-                    ArmState arm = (ArmState) nextState;
-                    arm.setHeight(height);
-                }
-            }
-
-            this.stop();
-            this.goToNextState();
         }
 
-        telemetry.addLine("Analysis:" + position);
+        telemetry.addLine("Analysis: " + position);
+        telemetry.addLine("Num_iter:" + num_iter);
+        telemetry.addLine("Seconds elapsed:" + (System.currentTimeMillis() - prev_time));
     }
 
     @Override

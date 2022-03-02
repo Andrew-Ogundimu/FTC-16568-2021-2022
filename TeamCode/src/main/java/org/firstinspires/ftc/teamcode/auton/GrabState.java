@@ -18,11 +18,10 @@ public class GrabState extends State {
     private int time;
     private long initial_time;
     private CRServo grab = null;
-    private double position;
 
-    public GrabState(double position, int time, HardwareMap hardwareMap, Telemetry telemetry) {
+    public GrabState(double power, int time, HardwareMap hardwareMap, Telemetry telemetry) {
         super(hardwareMap);
-        this.position = position;
+        this.power = power;
         this.time = time;
         this.telemetry = telemetry;
 
@@ -35,7 +34,7 @@ public class GrabState extends State {
         this.running = true;
         initial_time = System.currentTimeMillis();
 
-        grab.setPower(position);
+        grab.setPower(power);
     }
 
     @Override

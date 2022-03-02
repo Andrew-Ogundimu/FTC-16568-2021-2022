@@ -43,7 +43,8 @@ public class ArmState extends State {
 
     private int target;
 
-    //new method for beta PID-drive
+    private double servo_range = 180;
+
     public ArmState(int pos_x, int pos_y, HardwareMap hardwareMap, Telemetry telemetry) {
         super(hardwareMap);
         this.pos_x = pos_x;
@@ -65,9 +66,9 @@ public class ArmState extends State {
 
         float[] targ_pos = new float[]{pos_x,pos_y};
         float[] angles = total.CalcServos(targ_pos[0],targ_pos[1]);
-        arm2.setPosition(clip(1.0-(double)angles[1]));
+        arm2.setPosition(clip(angles[1])*180/servo_range);
 
-        target = (int)(-((angles[0])*(tickRotation/2)-initAngle/180*tickRotation/2));
+        target = (int)(((angles[0])*(tickRotation/2)-initAngle/180*tickRotation/2));
 
         arm1.setTargetPosition(target); //some function that implements angles[0]
         arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
