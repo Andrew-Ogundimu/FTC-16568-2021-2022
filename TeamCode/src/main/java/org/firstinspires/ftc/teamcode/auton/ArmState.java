@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Settings;
-import org.firstinspires.ftc.teamcode.teleop.Teleop;
 
 import java.lang.Math;
 import java.util.Arrays;
@@ -19,11 +18,12 @@ import java.util.Arrays;
 
 public class ArmState extends State {
 
-    private int threshold = 75;
+    private int threshold = 20;
     private Telemetry telemetry;
 
     private DcMotor arm1;
     private Servo arm2;
+    private double servo_range = 280;
 
     private ArmState.Arm total = new ArmState.Arm(250f,250f);
 
@@ -32,6 +32,7 @@ public class ArmState extends State {
     final double initAngle = total.CalcServos(start_pos[0],start_pos[1])[0]*180;
 
     private float arm_speed = 3;
+    private float[] angles = new float[]{0f,0f};
 
     private float[] targ_pos = start_pos.clone();
     private float[] last_targ = targ_pos.clone();
@@ -43,8 +44,7 @@ public class ArmState extends State {
 
     private int target;
 
-    private double servo_range = 180;
-
+    //new method for beta PID-drive
     public ArmState(int pos_x, int pos_y, HardwareMap hardwareMap, Telemetry telemetry) {
         super(hardwareMap);
         this.pos_x = pos_x;
@@ -66,7 +66,7 @@ public class ArmState extends State {
 
         float[] targ_pos = new float[]{pos_x,pos_y};
         float[] angles = total.CalcServos(targ_pos[0],targ_pos[1]);
-        arm2.setPosition(clip(angles[1])*180/servo_range);
+        arm2.setPosition(clip(angles[1]*180/servo_range+(servo_range-180)/servo_range));
 
         target = (int)(((angles[0])*(tickRotation/2)-initAngle/180*tickRotation/2));
 
@@ -76,9 +76,16 @@ public class ArmState extends State {
 
     @Override
     public void update() {
-        if ((Math.sqrt(targ_pos[0]*targ_pos[0]+targ_pos[1]*targ_pos[1])>total.segment1+total.segment2) || (Arrays.asList(targ_pos).contains(null))) {
-            targ_pos = last_targ.clone();
-        }
+        arm1.setPower(1.0f);
+
+        float[] targ_pos = new float[]{pos_x,pos_y};
+        angles = total.CalcServos(targ_pos[0],targ_pos[1]);
+        arm2.setPosition(1.0-clip(angles[1]*180/servo_range+(servo_range-180)/servo_range));
+
+        target = (int)(((angles[0])*(tickRotation/2)-initAngle/180*tickRotation/2));
+
+        arm1.setTargetPosition(target); //some function that implements angles[0]
+        arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         if (Math.abs(arm1.getCurrentPosition() - target) < threshold) { // reached target position
             this.stop();
@@ -87,7 +94,9 @@ public class ArmState extends State {
 
         last_targ = targ_pos.clone();
 
-        telemetry.addLine("Target Position: " + Math.abs(arm1.getCurrentPosition() - target));
+        telemetry.addLine("Target Position: " + this.pos_x+" "+this.pos_y);
+        telemetry.addData("Angles",Float.toString(angles[0]*180.0f)+" "+Float.toString(angles[1]*180.0f));
+        telemetry.update();
     }
 
     @Override
@@ -97,7 +106,9 @@ public class ArmState extends State {
 
     @Override
     public String toString() {
-        return "Target Position: " + Math.abs(arm1.getCurrentPosition() - target);
+        telemetry.addData("Angles",Float.toString(angles[0]*180.0f)+" "+Float.toString(angles[1]*180.0f));
+        telemetry.update();
+        return ("Target Position: " + this.pos_x+" "+this.pos_y);
     }
 
     public void setHeight(int height) {

@@ -24,6 +24,7 @@ public class BlueElement extends OpMode {
      * The first state to be run.
      */
     private State headerState;
+    private State arm_state;
 
     // private IMU imu;
 
@@ -38,15 +39,15 @@ public class BlueElement extends OpMode {
         State[] defaultStateSequence = {
                 new GrabState(-1.0,1, hardwareMap, telemetry),  // grab element
                 new SensorState(hardwareMap,telemetry), // detect capstone position
-                new DriveState(5, 0.7, 90, hardwareMap,telemetry), // move away from the wall
+                new DriveState(5, 0.7, 0, hardwareMap,telemetry), // move away from the wall
                 new TurnArcState(90,hardwareMap,telemetry), // turn so that the arm faces forwards
-                new DriveState(24,0.7, 90, hardwareMap, telemetry), // move sideways (away from elements)
-                new DriveState(17,0.7, 0, hardwareMap, telemetry), // move forwards (towards the shipping hub)
-                new ArmState(262,0, hardwareMap,telemetry), // raise the arm to the specified level
-                new DriveState(7,0.7,0,hardwareMap,telemetry), // move forwards (towards the shipping hub)
+                new DriveState(24,0.7, 0, hardwareMap, telemetry), // move sideways (away from elements)
+                new DriveState(17,0.7, -90, hardwareMap, telemetry), // move forwards (towards the shipping hub)
+                new ArmState(290,0, hardwareMap,telemetry), // raise the arm to the specified level
+                new DriveState(7,0.7,-90,hardwareMap,telemetry), // move forwards (towards the shipping hub)
                 new GrabState(1.0,1, hardwareMap, telemetry), // release element
         };
-
+        arm_state = defaultStateSequence[6];
         headerState = StateBuilder.buildStates(defaultStateSequence);
     }
 
@@ -69,7 +70,7 @@ public class BlueElement extends OpMode {
         }
 
         String status = running ? "RUNNING" : "COMPLETED";
-        String currentStateString = running ? currentState.toString() : "None";
+        String currentStateString = arm_state.toString();
 
         // State telemetry
         telemetry.addLine("CurrentState: " + currentStateString);
@@ -91,4 +92,3 @@ public class BlueElement extends OpMode {
         // this.imu.close();
     }
 }
-

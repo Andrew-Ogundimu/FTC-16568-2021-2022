@@ -90,15 +90,15 @@ public class SensorState extends State {
 
         if (position == SensorState.SkystoneDeterminationPipeline.SkystonePosition.LEFT) {
             total = 1;
-            height = 100;
+            height = 11;
         }
         else if (position == SensorState.SkystoneDeterminationPipeline.SkystonePosition.CENTER) {
             total = 2;
-            height = 200;
+            height = 151;
         }
         else {
             total = 3;
-            height = 300;
+            height = 364;
         }
 
         while (current_state.nextState != null) {

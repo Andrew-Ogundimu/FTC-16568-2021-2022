@@ -63,6 +63,8 @@ public class TurnArcState extends State {
         m1 = hardwareMap.get(DcMotor.class, "m1");
         m2 = hardwareMap.get(DcMotor.class, "m2");
         m3 = hardwareMap.get(DcMotor.class, "m3");
+
+        turn_target = (int) TickService.inchesToTicks(turn_radius * Math.toRadians(gyroTarget));
     }
 
     @Override
@@ -70,7 +72,8 @@ public class TurnArcState extends State {
         this.running = true;
         runtime.reset();
 
-        turn_target = (int) TickService.inchesToTicks(turn_radius * Math.toRadians(gyroTarget));
+        this.imu.initialize();
+        this.imu.setDefaultOrientation();
 
         m0.setDirection(DcMotor.Direction.FORWARD);
         m3.setDirection(DcMotor.Direction.REVERSE);
@@ -78,10 +81,26 @@ public class TurnArcState extends State {
         m1.setDirection(DcMotor.Direction.FORWARD);
         m2.setDirection(DcMotor.Direction.REVERSE);
 
+        //must set the runMode to run without encoder in order for it to run
         m0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         m1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         m2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         m3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        /**
+        int currentPosition = (m0.getCurrentPosition()
+                + m1.getCurrentPosition()
+                + m2.getCurrentPosition()
+                + m3.getCurrentPosition()) / 4; // in case the encoders are not exactly at 0
+         */
+
+        // position = currentPosition + TickService.inchesToTicks(distance);
+
+        //int flTargetPosition = getFlTargetPosition(); //need fl motor position for PID calculations
+
+        // calculate the separate positions (for x,y):
+
+        // might need to reverse it, btw (meaning that we need -x for the position, based on the teleop)
 
         m0.setTargetPosition(turn_target);
         m2.setTargetPosition(-turn_target);
@@ -89,10 +108,20 @@ public class TurnArcState extends State {
         m1.setTargetPosition(turn_target);
         m3.setTargetPosition(-turn_target);
 
+        // setTargets(); // set target positions for each motor
+
         m0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         m1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         m2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         m3.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        // separate PID control for x,y
+
+        // pidDrive_x = new PIDController(m0,1.7, 0.001, 0.6, hardwareMap, flTargetPosition, maxSpeed);
+        // pidDrive_y = new PIDController(m1,1.7, 0.001, 0.6, hardwareMap, flTargetPosition, maxSpeed);
+
+        // driveSpeed_x = pidDrive_x.PIDControl();
+        // driveSpeed_y = pidDrive_y.PIDControl();
 
         turn(.3); // start at half power
     }

@@ -2,16 +2,14 @@ package org.firstinspires.ftc.teamcode.auton;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
-
-import org.firstinspires.ftc.teamcode.hardware.IMU;
 
 /**
  * This is the autonomous state machine, where we make and run the states.
+ * This class is for depositing the pre-loaded element into the shipping container
  */
 
-@Autonomous(name = "RedWheel_NearPark")
-public class RedWheel_NearPark extends OpMode {
+@Autonomous(name = "ArmStateTest")
+public class TestingAuton extends OpMode {
 
     // INSTANCE VARIABLES
     /**
@@ -23,6 +21,7 @@ public class RedWheel_NearPark extends OpMode {
      * The first state to be run.
      */
     private State headerState;
+    public State arm_state;
 
     // private IMU imu;
 
@@ -35,16 +34,10 @@ public class RedWheel_NearPark extends OpMode {
     public void init() {
 
         State[] defaultStateSequence = {
-                new DriveState(5, 0.9, 0, hardwareMap, telemetry),
-                new DriveState(14, 0.9, 90, hardwareMap, telemetry),
-                new WheelState(-1, 5, hardwareMap, telemetry),
-                new DriveState(22, 0.9, 0, hardwareMap, telemetry),
-                //new TurnArcState(90, hardwareMap, telemetry),
-                //new DriveState(10, 0.9, 0, hardwareMap, telemetry),
+                new ArmState(250,100, hardwareMap,telemetry),
+                new GrabState(1.0,1, hardwareMap, telemetry) // release element
         };
-
-        // this.imu = IMU.getInstance(IMU.class, hardwareMap);
-
+        arm_state = defaultStateSequence[0];
         headerState = StateBuilder.buildStates(defaultStateSequence);
     }
 
@@ -53,7 +46,6 @@ public class RedWheel_NearPark extends OpMode {
      */
     @Override
     public void start() {
-        // this.imu.setDefaultOrientation();
         this.headerState.start();
     }
 
@@ -62,18 +54,18 @@ public class RedWheel_NearPark extends OpMode {
         State currentState = headerState.getCurrentState();
         boolean running = currentState != null;
 
+        // Update State
+        if (running) {
+            currentState.update();
+        }
+
         String status = running ? "RUNNING" : "COMPLETED";
-        String currentStateString = running ? currentState.toString() : "None";
+        String currentStateString = arm_state.toString();
 
         // State telemetry
         telemetry.addLine("CurrentState: " + currentStateString);
         telemetry.addLine("Status: " + status);
         // telemetry.addLine("Orientation: " + this.imu.getOrientation());
-
-        // Update State
-        if (running) {
-            currentState.update();
-        }
 
         // Version telemetry.
         telemetry.addLine("Version: " + this.VERSION);

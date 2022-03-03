@@ -35,12 +35,12 @@ public class BlueWheel_FarPark extends OpMode {
     public void init() {
 
         State[] defaultStateSequence = {
-                new DriveState(5, 0.9, -90, hardwareMap, telemetry),
-                new DriveState(11.5, 0.9, 180, hardwareMap, telemetry),
+                new DriveState(5, 0.1, -90, hardwareMap, telemetry),
+                new DriveState(11.5, 0.1, 180, hardwareMap, telemetry),
                 new WheelState(1, 5, hardwareMap, telemetry),
-                new DriveState(11.5, 0.9, 0, hardwareMap, telemetry),
-                new DriveState(5, 0.9, 90, hardwareMap, telemetry),
-                new DriveState(98-11.5, 0.9, 0, hardwareMap, telemetry),
+                new DriveState(11.5, 0.1, 0, hardwareMap, telemetry),
+                new DriveState(5, 0.1, 90, hardwareMap, telemetry),
+                new DriveState(98-11.5, 0.1, 0, hardwareMap, telemetry),
         };
 
         headerState = StateBuilder.buildStates(defaultStateSequence);
