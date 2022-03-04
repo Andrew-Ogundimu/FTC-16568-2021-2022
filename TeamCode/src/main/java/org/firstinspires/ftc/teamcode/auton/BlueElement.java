@@ -47,6 +47,7 @@ public class BlueElement extends OpMode {
                 new DriveState(7,0.7,-90,hardwareMap,telemetry), // move forwards (towards the shipping hub)
                 new GrabState(1.0,1, hardwareMap, telemetry), // release element
         };
+
         arm_state = defaultStateSequence[6];
         headerState = StateBuilder.buildStates(defaultStateSequence);
     }

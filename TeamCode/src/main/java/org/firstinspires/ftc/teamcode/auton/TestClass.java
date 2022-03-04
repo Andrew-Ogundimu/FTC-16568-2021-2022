@@ -36,8 +36,17 @@ public class TestClass extends OpMode {
     public void init() {
 
         State[] defaultStateSequence = {
-                new DriveState(5, 0.7, 90, hardwareMap,telemetry),
+                new SensorState(hardwareMap,telemetry),
+                new NewArmState(290, 0, hardwareMap,telemetry)
         };
+
+        /**
+
+        State[] defaultStateSequence = {
+                new DriveState(5, 0.7, 90, hardwareMap,telemetry),
+                new NewArmState(290,0,hardwareMap,telemetry)
+        };
+         */
 
         headerState = StateBuilder.buildStates(defaultStateSequence);
     }

@@ -58,7 +58,7 @@ public class DriveState extends State {
         super(hardwareMap);
         this.distance = distance;
         this.maxSpeed = maxSpeed;
-        this.direction = (direction + 45) % 360;  // angle, need to negate this
+        this.direction = (direction - 45) % 360;  // +45 for the old auton files
         this.telemetry = telemetry;
 
         // initialize the motors with the hardware map
