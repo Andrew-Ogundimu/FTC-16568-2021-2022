@@ -80,7 +80,7 @@ public class ArmState extends State {
 
         float[] targ_pos = new float[]{pos_x,pos_y};
         angles = total.CalcServos(targ_pos[0],targ_pos[1]);
-        arm2.setPosition(1.0-clip(angles[1]*180/servo_range+(servo_range-180)/servo_range));
+        arm2.setPosition(clip(angles[1]*180/servo_range+(servo_range-180)/servo_range));
 
         target = (int)(((angles[0])*(tickRotation/2)-initAngle/180*tickRotation/2));
 
@@ -96,6 +96,7 @@ public class ArmState extends State {
 
         telemetry.addLine("Target Position: " + this.pos_x+" "+this.pos_y);
         telemetry.addData("Angles",Float.toString(angles[0]*180.0f)+" "+Float.toString(angles[1]*180.0f));
+        telemetry.addData("motor and servo",arm1.getCurrentPosition()+" "+arm2.getPosition());
         telemetry.update();
     }
 
@@ -107,6 +108,7 @@ public class ArmState extends State {
     @Override
     public String toString() {
         telemetry.addData("Angles",Float.toString(angles[0]*180.0f)+" "+Float.toString(angles[1]*180.0f));
+        telemetry.addData("motor and servo",arm1.getCurrentPosition()+" "+arm2.getPosition());
         telemetry.update();
         return ("Target Position: " + this.pos_x+" "+this.pos_y);
     }

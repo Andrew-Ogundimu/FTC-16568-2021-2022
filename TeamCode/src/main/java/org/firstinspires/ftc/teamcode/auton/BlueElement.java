@@ -71,7 +71,7 @@ public class BlueElement extends OpMode {
         }
 
         String status = running ? "RUNNING" : "COMPLETED";
-        String currentStateString = arm_state.toString();
+        String currentStateString = running ? currentState.toString() : "None";
 
         // State telemetry
         telemetry.addLine("CurrentState: " + currentStateString);

@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Settings;
+import org.firstinspires.ftc.teamcode.teleop.Teleop_With_Camera;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -64,7 +65,7 @@ public class SensorState extends State {
             @Override
             public void onOpened()
             {
-                webcam.startStreaming(320,240, OpenCvCameraRotation.UPRIGHT);
+                webcam.startStreaming(1280,720, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override
@@ -150,9 +151,9 @@ public class SensorState extends State {
         /*
          * The core values which define the location and size of the sample regions
          */
-        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(109,98);
-        static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(181,98);
-        static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(253,98);
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(181,350);
+        static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(680,350);
+        static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(1250,350);
         static final int REGION_WIDTH = 20;
         static final int REGION_HEIGHT = 20;
 
@@ -201,7 +202,7 @@ public class SensorState extends State {
         int avg1, avg2, avg3;
 
         // Volatile since accessed by OpMode thread w/o synchronization
-        private volatile SensorState.SkystoneDeterminationPipeline.SkystonePosition position = SensorState.SkystoneDeterminationPipeline.SkystonePosition.LEFT;
+        private volatile SkystoneDeterminationPipeline.SkystonePosition position = SkystoneDeterminationPipeline.SkystonePosition.LEFT;
 
         /*
          * This function takes the RGB frame, converts to YCrCb,
@@ -337,7 +338,7 @@ public class SensorState extends State {
              */
             if(max == avg1) // Was it from region 1?
             {
-                position = SensorState.SkystoneDeterminationPipeline.SkystonePosition.LEFT; // Record our analysis
+                position = SkystoneDeterminationPipeline.SkystonePosition.LEFT; // Record our analysis
 
                 /*
                  * Draw a solid rectangle on top of the chosen region.
@@ -352,7 +353,7 @@ public class SensorState extends State {
             }
             else if(max == avg2) // Was it from region 2?
             {
-                position = SensorState.SkystoneDeterminationPipeline.SkystonePosition.CENTER; // Record our analysis
+                position = SkystoneDeterminationPipeline.SkystonePosition.CENTER; // Record our analysis
 
                 /*
                  * Draw a solid rectangle on top of the chosen region.
@@ -367,7 +368,7 @@ public class SensorState extends State {
             }
             else if(max == avg3) // Was it from region 3?
             {
-                position = SensorState.SkystoneDeterminationPipeline.SkystonePosition.RIGHT; // Record our analysis
+                position = SkystoneDeterminationPipeline.SkystonePosition.RIGHT; // Record our analysis
 
                 /*
                  * Draw a solid rectangle on top of the chosen region.
@@ -392,7 +393,7 @@ public class SensorState extends State {
         /*
          * Call this from the OpMode thread to obtain the latest analysis
          */
-        public SensorState.SkystoneDeterminationPipeline.SkystonePosition getAnalysis()
+        public SkystoneDeterminationPipeline.SkystonePosition getAnalysis()
         {
             return position;
         }
