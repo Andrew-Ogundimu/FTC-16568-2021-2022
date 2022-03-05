@@ -73,6 +73,9 @@ public abstract class State {
      */
     public abstract void start();
 
+    public void init() {
+
+    }
     /**
      * Updates the state.
      */

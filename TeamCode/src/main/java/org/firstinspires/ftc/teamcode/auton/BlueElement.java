@@ -39,16 +39,21 @@ public class BlueElement extends OpMode {
         State[] defaultStateSequence = {
                 new GrabState(-1.0,1, hardwareMap, telemetry),  // grab element
                 new SensorState(hardwareMap,telemetry), // detect capstone position
-                new DriveState(5, 0.7, 0, hardwareMap,telemetry), // move away from the wall
+                new DriveState(5, 0.7, 90 - 90, hardwareMap,telemetry), // move away from the wall
                 new TurnArcState(90,hardwareMap,telemetry), // turn so that the arm faces forwards
-                new DriveState(24,0.7, 0, hardwareMap, telemetry), // move sideways (away from elements)
-                new DriveState(17,0.7, -90, hardwareMap, telemetry), // move forwards (towards the shipping hub)
+                new DriveState(24,0.7, 90 - 90, hardwareMap, telemetry), // move sideways (away from elements)
+                new DriveState(17,0.7, 0 - 90, hardwareMap, telemetry), // move forwards (towards the shipping hub)
                 new ArmState(290,0, hardwareMap,telemetry), // raise the arm to the specified level
-                new DriveState(7,0.7,-90,hardwareMap,telemetry), // move forwards (towards the shipping hub)
+                new DriveState(7,0.7,0 - 90,hardwareMap,telemetry), // move forwards (towards the shipping hub)
                 new GrabState(1.0,1, hardwareMap, telemetry), // release element
+                new DriveState(7,0.7, 180 - 90, hardwareMap, telemetry), // release element
+                new ArmState(70,60, hardwareMap,telemetry), // raise the arm to the specified level
         };
 
-        arm_state = defaultStateSequence[6];
+        for (State state: defaultStateSequence) {
+            state.init();
+        }
+
         headerState = StateBuilder.buildStates(defaultStateSequence);
     }
 

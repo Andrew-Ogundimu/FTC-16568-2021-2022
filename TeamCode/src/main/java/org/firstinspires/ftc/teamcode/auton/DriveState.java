@@ -58,7 +58,7 @@ public class DriveState extends State {
         super(hardwareMap);
         this.distance = distance;
         this.maxSpeed = maxSpeed;
-        this.direction = (direction - 45) % 360;  // +45 for the old auton files
+        this.direction = (direction + 45) % 360;  // +45 for the old auton files
         this.telemetry = telemetry;
 
         // initialize the motors with the hardware map
@@ -166,10 +166,12 @@ public class DriveState extends State {
             drive(driveSpeed_x,driveSpeed_y);
         }
 
-        telemetry.addLine("FL Diff: " + Math.abs(m0.getCurrentPosition() - flTargetPosition));
-        telemetry.addLine("FR Diff: " + Math.abs(m1.getCurrentPosition() - flTargetPosition));
-        telemetry.addLine("BL Diff: " + Math.abs(m2.getCurrentPosition() - blTargetPosition));
-        telemetry.addLine("BR Diff: " + Math.abs(m3.getCurrentPosition() - brTargetPosition));
+        telemetry.addLine("m1 Diff: " + Math.abs(m1.getCurrentPosition() - position_y));
+        telemetry.addLine("m1 Pos: " + m1.getCurrentPosition());
+        telemetry.addLine("m1 Power: " + m1.getPower());
+        telemetry.addLine("m0 Diff: " + Math.abs(m0.getCurrentPosition() - position_x));
+        telemetry.addLine("m2 Diff: " + Math.abs(m2.getCurrentPosition() - position_x));
+        telemetry.addLine("m3 Diff: " + Math.abs(m3.getCurrentPosition() - position_y));
         // telemetry.addLine("actualSpeed : " + realSpeed);
     }
 

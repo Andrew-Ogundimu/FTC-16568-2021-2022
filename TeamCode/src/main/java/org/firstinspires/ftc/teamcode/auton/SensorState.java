@@ -52,9 +52,7 @@ public class SensorState extends State {
     }
 
     @Override
-    public void start() {
-        this.running = true;
-
+    public void init() {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         pipeline = new SensorState.SkystoneDeterminationPipeline();
@@ -76,6 +74,11 @@ public class SensorState extends State {
                  */
             }
         });
+    }
+
+    @Override
+    public void start() {
+        this.running = true;
 
         prev_time = System.currentTimeMillis();
     }
@@ -90,16 +93,13 @@ public class SensorState extends State {
         position = pipeline.getAnalysis();
 
         if (position == SensorState.SkystoneDeterminationPipeline.SkystonePosition.LEFT) {
-            total = 1;
-            height = 11;
+            height = 145; // 297, 145
         }
         else if (position == SensorState.SkystoneDeterminationPipeline.SkystonePosition.CENTER) {
-            total = 2;
-            height = 151;
+            height = 288; // 297, 288
         }
         else {
-            total = 3;
-            height = 364;
+            height = 421; // 297, 390
         }
 
         while (current_state.nextState != null) {
@@ -151,9 +151,15 @@ public class SensorState extends State {
         /*
          * The core values which define the location and size of the sample regions
          */
+        /**
         static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(181,350);
         static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(680,350);
-        static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(1250,350);
+        static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(1250,350); // 1250
+         */
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(181,200);
+        static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(680,200);
+        static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(1150,200);
+
         static final int REGION_WIDTH = 20;
         static final int REGION_HEIGHT = 20;
 

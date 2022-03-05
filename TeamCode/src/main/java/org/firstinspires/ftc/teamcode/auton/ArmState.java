@@ -27,7 +27,7 @@ public class ArmState extends State {
 
     private ArmState.Arm total = new ArmState.Arm(250f,250f);
 
-    final float[] start_pos = new float[]{105f,60f};
+    final float[] start_pos = new float[]{-60f,215f};
 
     final double initAngle = total.CalcServos(start_pos[0],start_pos[1])[0]*180;
 
@@ -62,22 +62,49 @@ public class ArmState extends State {
     public void start() {
         this.running = true;
 
-        arm1.setPower(1.0f);
+        arm1.setTargetPosition(arm1.getCurrentPosition()); // lock the motor in place
+        arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        arm1.setPower(0.5f); // maximum power to hold in place
 
         float[] targ_pos = new float[]{pos_x,pos_y};
         float[] angles = total.CalcServos(targ_pos[0],targ_pos[1]);
         arm2.setPosition(clip(angles[1]*180/servo_range+(servo_range-180)/servo_range));
 
+        try {
+            Thread.sleep(750);
+        }
+        catch (Exception e) {
+            telemetry.addLine("Sleep function failed.");
+            telemetry.update();
+        }
+
         target = (int)(((angles[0])*(tickRotation/2)-initAngle/180*tickRotation/2));
 
         arm1.setTargetPosition(target); //some function that implements angles[0]
         arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        arm1.setPower(0.5f);
+
+        try {
+            Thread.sleep(500);
+        }
+        catch (Exception e) {
+            telemetry.addLine("Sleep function failed.");
+            telemetry.update();
+        }
+
+        arm1.setPower(1.0f);
     }
 
     @Override
     public void update() {
-        arm1.setPower(1.0f);
 
+        /**
+        telemetry.addLine("Servo Moved");
+        telemetry.update();
+         */
+
+        /**
         float[] targ_pos = new float[]{pos_x,pos_y};
         angles = total.CalcServos(targ_pos[0],targ_pos[1]);
         arm2.setPosition(clip(angles[1]*180/servo_range+(servo_range-180)/servo_range));
@@ -86,6 +113,8 @@ public class ArmState extends State {
 
         arm1.setTargetPosition(target); //some function that implements angles[0]
         arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        arm1.setPower(0.3f);
+         */
 
         if (Math.abs(arm1.getCurrentPosition() - target) < threshold) { // reached target position
             this.stop();
@@ -94,10 +123,12 @@ public class ArmState extends State {
 
         last_targ = targ_pos.clone();
 
+        /**
         telemetry.addLine("Target Position: " + this.pos_x+" "+this.pos_y);
         telemetry.addData("Angles",Float.toString(angles[0]*180.0f)+" "+Float.toString(angles[1]*180.0f));
         telemetry.addData("motor and servo",arm1.getCurrentPosition()+" "+arm2.getPosition());
         telemetry.update();
+         */
     }
 
     @Override

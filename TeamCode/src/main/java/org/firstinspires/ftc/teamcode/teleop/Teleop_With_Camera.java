@@ -76,9 +76,15 @@ public class Teleop_With_Camera extends OpMode
         /*
          * The core values which define the location and size of the sample regions
          */
-        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(109,98);
-        static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(181,98);
-        static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(253,98);
+        /**
+         static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(181,350);
+         static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(680,350);
+         static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(1250,350);
+         */
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(181,200);
+        static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(680,200);
+        static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(1150,200);
+
         static final int REGION_WIDTH = 20;
         static final int REGION_HEIGHT = 20;
 
@@ -340,7 +346,8 @@ public class Teleop_With_Camera extends OpMode
     final int tickRotation = 1680;
     private Arm total = new Arm(250f,250f);
     private float arm_speed = 3.5f;
-    final float[] start_pos = new float[]{105f,60f};
+    final float[] start_pos = new float[]{-60f,215f};
+    //final float[] start_pos = new float[]{70f,60f};
     final double initAngle = (double)(total.CalcServos(start_pos[0],start_pos[1])[0]*180);
     private float[] targ_pos = start_pos.clone();
     private float[] last_targ = targ_pos.clone();
@@ -380,7 +387,7 @@ public class Teleop_With_Camera extends OpMode
             @Override
             public void onOpened()
             {
-                webcam.startStreaming(320,240, OpenCvCameraRotation.UPRIGHT);
+                webcam.startStreaming(1280,720, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override

@@ -25,6 +25,8 @@ public class TestClass extends OpMode {
      */
     private State headerState;
 
+    private State sensorState;
+
     // private IMU imu;
 
     // METHODS
@@ -36,9 +38,25 @@ public class TestClass extends OpMode {
     public void init() {
 
         State[] defaultStateSequence = {
+                new SleepState(3,hardwareMap,telemetry),
                 new SensorState(hardwareMap,telemetry),
-                new NewArmState(290, 0, hardwareMap,telemetry)
+                new ArmState(255,0, hardwareMap,telemetry)
+                //new ArmState(1, 60, hardwareMap,telemetry)
         };
+
+        /*
+        State[] defaultStateSequence = {
+                new SleepState(3,hardwareMap,telemetry),
+                new DriveState(10,0.7,0-90,hardwareMap,telemetry)
+                //new ArmState(70, 60, hardwareMap,telemetry)
+        };
+        */
+
+        for (State state: defaultStateSequence) {
+            state.init();
+        }
+
+        sensorState = defaultStateSequence[0];
 
         /**
 
@@ -70,7 +88,8 @@ public class TestClass extends OpMode {
         }
 
         String status = running ? "RUNNING" : "COMPLETED";
-        String currentStateString = running ? currentState.toString() : "None";
+        // String currentStateString = running ? currentState.toString() : "None";
+        String currentStateString = sensorState.toString();
 
         // State telemetry
         telemetry.addLine("CurrentState: " + currentStateString);
